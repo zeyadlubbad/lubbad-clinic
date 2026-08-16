@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0A7E8C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="عيادة لبد">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<title>عيادة د. أسامة لبد</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none;background:#0A7E8C}input,select,textarea,button{font-family:inherit}::-webkit-scrollbar{width:0;height:0}.loading-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-size:18px}.spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,0.3);border-top:4px solid #fff;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px}@keyframes spin{to{transform:rotate(360deg)}}</style>
+</head>
+<body>
+<div id="root"><div class="loading-screen"><div class="spinner"></div>جاري التحميل...</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyA1zHW7Cyvj6wzmpgv_OJmzg6vVOQuJwTA",authDomain:"lubbadclinic2026.firebaseapp.com",projectId:"lubbadclinic2026",storageBucket:"lubbadclinic2026.firebasestorage.app",messagingSenderId:"1036054966647",appId:"1:1036054966647:web:5697aeeb6256c073c13172"});
+var db=firebase.firestore();
+const { useState, useEffect, useRef } = React;
+
+const LOGO = "data:image/jpeg;base64,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";
+
+var C={pri:"#0A7E8C",priD:"#065A64",priL:"#E8F5F3",acc:"#E8734A",bg:"#F4F7F8",card:"#fff",txt:"#1A2B3B",txtL:"#6B7D8E",ok:"#2EAC6A",okL:"#E8F5F1",warn:"#E5A832",warnL:"#FFF3E8",err:"#D33",errL:"#FEE8E8",brd:"#E2E8ED"};
+var ADMINS={admin:"admin123",ziad:"ziad123"};
+var PAY_INFO=[{m:"🏦 بنك",n:"0599406182"},{m:"💜 بال باي",n:"0598165437"},{m:"📱 جوال باي",n:"0599406182"}];
+
+function Btn(p){return React.createElement("button",{onClick:p.onClick,disabled:p.disabled,style:Object.assign({border:"none",borderRadius:10,fontSize:p.small?12:14,fontWeight:600,cursor:p.disabled?"default":"pointer",padding:p.small?"7px 14px":"11px 18px",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"inherit",opacity:p.disabled?.5:1},p.full?{width:"100%"}:{},p.v==="pri"||!p.v?{background:"linear-gradient(135deg,"+C.pri+","+C.priD+")",color:"#fff"}:p.v==="ok"?{background:C.ok,color:"#fff"}:p.v==="out"?{background:"transparent",color:C.txt,border:"1.5px solid "+C.brd}:p.v==="err"?{background:C.errL,color:C.err}:p.v==="ghost"?{background:"transparent",color:C.txtL}:{},p.s||{})},p.children)}
+
+function Inp(p){return React.createElement("div",{style:{marginBottom:12}},p.label&&React.createElement("label",{style:{fontSize:12,color:C.txtL,marginBottom:4,display:"block"}},p.label),p.textarea?React.createElement("textarea",{value:p.value,onChange:function(e){p.onChange(e.target.value)},placeholder:p.placeholder,style:{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid "+C.brd,fontSize:13,outline:"none",boxSizing:"border-box",direction:"rtl",resize:"vertical",minHeight:60,fontFamily:"inherit"}}):React.createElement("input",{type:p.type||"text",value:p.value,onChange:function(e){p.onChange(e.target.value)},placeholder:p.placeholder,style:{width:"100%",padding:"10px 12px",borderRadius:10,border:"1.5px solid "+C.brd,fontSize:13,outline:"none",boxSizing:"border-box",direction:"rtl",fontFamily:"inherit"}}))}
+
+function Cd(p){return React.createElement("div",{onClick:p.onClick,style:Object.assign({background:C.card,borderRadius:14,padding:"14px 16px",marginBottom:10,border:"1px solid "+C.brd,cursor:p.onClick?"pointer":"default"},p.style||{})},p.children)}
+function Bg(p){var c=p.color==="ok"?{bg:C.okL,c:C.ok}:p.color==="warn"?{bg:C.warnL,c:C.warn}:p.color==="err"?{bg:C.errL,c:C.err}:{bg:C.priL,c:C.pri};return React.createElement("span",{style:{fontSize:10,background:c.bg,color:c.c,padding:"2px 8px",borderRadius:6,fontWeight:600}},p.text)}
+function Modal(p){return React.createElement("div",{onClick:p.onClose,style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:100,display:"flex",alignItems:"flex-end",justifyContent:"center"}},React.createElement("div",{onClick:function(e){e.stopPropagation()},style:{background:"#fff",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:430,maxHeight:"85vh",overflow:"auto",padding:"20px 18px 28px",direction:"rtl"}},React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}},React.createElement("h3",{style:{margin:0,fontSize:16,color:C.txt}},p.title),React.createElement("button",{onClick:p.onClose,style:{background:C.bg,border:"none",width:30,height:30,borderRadius:8,fontSize:16,cursor:"pointer",color:C.txtL}},"✕")),p.children))}
+
+function FileUp(p){var ref=useRef();return React.createElement("div",null,p.label&&React.createElement("label",{style:{fontSize:12,color:C.txtL,marginBottom:4,display:"block"}},p.label),React.createElement("button",{onClick:function(){ref.current.click()},style:{width:"100%",padding:"16px 12px",borderRadius:12,border:"2px dashed "+C.brd,background:C.bg,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,fontFamily:"inherit",color:C.txtL,fontSize:12,marginBottom:12}},"📎 اضغط لرفع ملف"),React.createElement("input",{ref:ref,type:"file",accept:p.accept||"image/*",onChange:function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){p.onUpload({name:f.name,data:r.result,date:new Date().toLocaleDateString("ar")})};r.readAsDataURL(f)},style:{display:"none"}}))}
+
+// Firebase helpers
+function fbAdd(col,data){return db.collection(col).add(Object.assign({},data,{createdAt:Date.now()}))}
+function fbUpdate(col,id,data){return db.collection(col).doc(id).update(data)}
+function fbDelete(col,id){return db.collection(col).doc(id).delete()}
+function useFB(col,qFn){var s=useState([]),docs=s[0],setDocs=s[1];var s2=useState(true),loading=s2[0],setL=s2[1];useEffect(function(){var ref=db.collection(col);if(qFn)ref=qFn(ref);var unsub=ref.onSnapshot(function(snap){setDocs(snap.docs.map(function(d){return Object.assign({id:d.id},d.data())}));setL(false)});return unsub},[]);return[docs,loading]}
+
+// ─── LOGIN ───
+function LoginScreen(p){
+  var s1=useState(""),user=s1[0],setUser=s1[1];
+  var s2=useState(""),pass=s2[0],setPass=s2[1];
+  var s3=useState(""),err=s3[0],setErr=s3[1];
+  var s4=useState(false),loading=s4[0],setL=s4[1];
+  function doLogin(){
+    setL(true);
+    if(ADMINS[user]===pass){setL(false);p.onLogin("admin",null);return}
+    db.collection("patients").where("user","==",user).where("pass","==",pass).get().then(function(snap){
+      setL(false);
+      if(!snap.empty){var d=snap.docs[0];p.onLogin("patient",Object.assign({id:d.id},d.data()))}
+      else{setErr("اسم المستخدم أو كلمة المرور غير صحيحة")}
+    })
+  }
+  return React.createElement("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,"+C.priD+","+C.pri+",#12939E)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24,direction:"rtl"}},
+    React.createElement("img",{src:LOGO,alt:"",style:{width:120,borderRadius:14,margin:"0 auto 12px",display:"block"}}),
+    React.createElement("h1",{style:{color:"#fff",fontSize:20,fontWeight:700,margin:0,textAlign:"center"}},"عيادة د. أسامة لبد"),
+    React.createElement("p",{style:{color:"rgba(255,255,255,0.7)",fontSize:12,margin:"4px 0 24px",textAlign:"center"}},"التغذية وعلاج مشاكل النمو"),
+    React.createElement("div",{style:{background:"#fff",borderRadius:20,padding:24,width:"100%",maxWidth:340}},
+      React.createElement("h2",{style:{fontSize:17,color:C.txt,margin:"0 0 18px",textAlign:"center"}},"تسجيل الدخول"),
+      React.createElement(Inp,{label:"اسم المستخدم",value:user,onChange:function(v){setUser(v);setErr("")}}),
+      React.createElement(Inp,{label:"كلمة المرور",type:"password",value:pass,onChange:function(v){setPass(v);setErr("")}}),
+      err&&React.createElement("p",{style:{color:C.err,fontSize:12,margin:"0 0 8px"}},err),
+      React.createElement(Btn,{full:true,onClick:doLogin,disabled:loading},loading?"جاري التحقق...":"دخول")
+    ),
+    React.createElement("p",{style:{color:"rgba(255,255,255,0.3)",fontSize:9,marginTop:20,textAlign:"center"}},"إدارة: admin / admin123")
+  )
+}
+
+// ─── ADMIN APP ───
+function AdminApp(p){
+  var s1=useState("dash"),tab=s1[0],setTab=s1[1];
+  var s2=useState(null),selPt=s2[0],setSelPt=s2[1];
+  var s3=useState(null),modal=s3[0],setModal=s3[1];
+  var s4=useState("info"),subTab=s4[0],setSubTab=s4[1];
+  var s5=useState(""),search=s5[0],setSearch=s5[1];
+  var pts=useFB("patients")[0];
+  var allMeds=useFB("meds")[0], allAppts=useFB("appts")[0], allPay=useFB("payments")[0], allNotes=useFB("notes")[0], allMsgs=useFB("messages")[0], allFiles=useFB("files")[0], allReceipts=useFB("receipts")[0];
+  var pt=selPt?pts.find(function(x){return x.id===selPt}):null;
+  var ptMeds=pt?allMeds.filter(function(m){return m.patientId===pt.id}):[];
+  var ptAppts=pt?allAppts.filter(function(a){return a.patientId===pt.id}):[];
+  var ptPay=pt?allPay.filter(function(x){return x.patientId===pt.id}):[];
+  var ptNotes=pt?allNotes.filter(function(n){return n.patientId===pt.id}):[];
+  var ptMsgs=pt?allMsgs.filter(function(m){return m.patientId===pt.id}).sort(function(a,b){return a.createdAt-b.createdAt}):[];
+  var ptFiles=pt?allFiles.filter(function(f){return f.patientId===pt.id}):[];
+  var ptReceipts=pt?allReceipts.filter(function(r){return r.patientId===pt.id}):[];
+  var filtered=pts.filter(function(x){return(x.name||"").includes(search)||(x.phone||"").includes(search)});
+  var totalOwed=allPay.filter(function(x){return!x.paid}).reduce(function(s,x){return s+(x.amount||0)},0);
+  var totalPaid=allPay.filter(function(x){return x.paid}).reduce(function(s,x){return s+(x.amount||0)},0);
+  var upcoming=allAppts.filter(function(a){return a.status==="قادم"}).map(function(a){var p2=pts.find(function(x){return x.id===a.patientId});return Object.assign({},a,{ptName:p2?p2.name:""})}).slice(0,5);
+  var balance=pt?(pt.balance||0):0;
+  var s6=useState(""),msgT=s6[0],setMsgT=s6[1];
+  var msgEnd=useRef();
+  useEffect(function(){if(msgEnd.current)msgEnd.current.scrollIntoView({behavior:"smooth"})},[ptMsgs.length]);
+
+  function PatientForm(fp){
+    var si=useState(fp.patient||{name:"",age:"",gender:"ذكر",height:"",weight:"",phone:"",status:"جديد",user:"",pass:"",balance:0}),f=si[0],setF=si[1];
+    function u(k,v){setF(function(o){var n=Object.assign({},o);n[k]=v;return n})}
+    return React.createElement(Modal,{title:fp.patient?"تعديل المريض":"إضافة مريض",onClose:fp.onClose},
+      React.createElement(Inp,{label:"الاسم",value:f.name,onChange:function(v){u("name",v)}}),
+      React.createElement("div",{style:{display:"flex",gap:10}},React.createElement("div",{style:{flex:1}},React.createElement(Inp,{label:"العمر",value:f.age,onChange:function(v){u("age",v)}})),React.createElement("div",{style:{flex:1}},React.createElement(Inp,{label:"الجنس",value:f.gender,onChange:function(v){u("gender",v)}}))),
+      React.createElement("div",{style:{display:"flex",gap:10}},React.createElement("div",{style:{flex:1}},React.createElement(Inp,{label:"الطول (سم)",value:f.height,onChange:function(v){u("height",v)}})),React.createElement("div",{style:{flex:1}},React.createElement(Inp,{label:"الوزن (كغ)",value:f.weight,onChange:function(v){u("weight",v)}}))),
+      React.createElement(Inp,{label:"الهاتف",value:f.phone,onChange:function(v){u("phone",v)}}),
+      React.createElement("div",{style:{display:"flex",gap:10}},React.createElement("div",{style:{flex:1}},React.createElement(Inp,{label:"اسم المستخدم",value:f.user,onChange:function(v){u("user",v)}})),React.createElement("div",{style:{flex:1}},React.createElement(Inp,{label:"كلمة المرور",value:f.pass,onChange:function(v){u("pass",v)}}))),
+      React.createElement(Inp,{label:"الرصيد (₪)",value:String(f.balance||0),onChange:function(v){u("balance",Number(v)||0)}}),
+      React.createElement(Inp,{label:"الحالة",value:f.status,onChange:function(v){u("status",v)}}),
+      React.createElement(Btn,{full:true,onClick:function(){if(!f.name||!f.user||!f.pass)return;if(fp.patient){fbUpdate("patients",fp.patient.id,f)}else{fbAdd("patients",f)}fp.onClose()}},"💾 حفظ")
+    )
+  }
+
+  var subs=[{k:"info",l:"البيانات"},{k:"meds",l:"الأدوية"},{k:"appts",l:"المواعيد"},{k:"pay",l:"الدفع"},{k:"files",l:"الملفات"},{k:"receipts",l:"الإيصالات"},{k:"notes",l:"الملاحظات"},{k:"msg",l:"الرسائل"}];
+  var navTabs=[{k:"dash",l:"🏠 الرئيسية"},{k:"patients",l:"👥 المرضى"},{k:"settings",l:"⚙️ إعدادات"}];
+
+  return React.createElement("div",{style:{minHeight:"100vh",background:C.bg,direction:"rtl",maxWidth:430,margin:"0 auto",fontFamily:"'Segoe UI',Tahoma,Arial,sans-serif"}},
+    React.createElement("div",{style:{background:C.card,padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:"1px solid "+C.brd,position:"sticky",top:0,zIndex:10}},
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6}},React.createElement("img",{src:LOGO,alt:"",style:{width:28}}),React.createElement("span",{style:{fontSize:13,fontWeight:700,color:C.txt}},"لوحة التحكم"),React.createElement(Bg,{text:"إدارة",color:"warn"})),
+      React.createElement("button",{onClick:p.onLogout,style:{background:"none",border:"none",color:C.txtL,cursor:"pointer",fontSize:11}},"خروج")),
+    React.createElement("div",{style:{padding:"12px 14px 85px"}},
+      // Dashboard
+      tab==="dash"&&React.createElement("div",null,
+        React.createElement("div",{style:{background:"linear-gradient(135deg,"+C.pri+","+C.priD+")",borderRadius:18,padding:18,color:"#fff",marginBottom:14}},React.createElement("div",{style:{fontSize:17,fontWeight:700}},"مرحباً، د. أسامة 👋"),React.createElement("div",{style:{fontSize:12,opacity:.8}},"لوحة تحكم العيادة")),
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}},
+          [{i:"👥",l:"المرضى",v:pts.length},{i:"📅",l:"مواعيد قادمة",v:upcoming.length},{i:"💰",l:"مستحقات",v:totalOwed+" ₪"},{i:"✅",l:"مدفوع",v:totalPaid+" ₪"}].map(function(c,i){return React.createElement(Cd,{key:i},React.createElement("div",{style:{fontSize:11,color:C.txtL}},c.i+" "+c.l),React.createElement("div",{style:{fontSize:18,fontWeight:700,color:C.txt,marginTop:4}},c.v))})),
+        upcoming.map(function(a,i){return React.createElement(Cd,{key:i,style:{display:"flex",justifyContent:"space-between"}},React.createElement("div",null,React.createElement("div",{style:{fontSize:13,fontWeight:600,color:C.txt}},a.ptName),React.createElement("div",{style:{fontSize:11,color:C.txtL}},a.type)),React.createElement("div",{style:{textAlign:"left"}},React.createElement("div",{style:{fontSize:12,fontWeight:600}},a.date),React.createElement("div",{style:{fontSize:11,color:C.txtL}},a.time)))})
+      ),
+      // Patient list
+      tab==="patients"&&React.createElement("div",null,
+        React.createElement("div",{style:{display:"flex",gap:8,marginBottom:12}},
+          React.createElement("input",{value:search,onChange:function(e){setSearch(e.target.value)},placeholder:"بحث...",style:{flex:1,padding:"9px 12px",borderRadius:10,border:"1.5px solid "+C.brd,fontSize:12,outline:"none",direction:"rtl",fontFamily:"inherit"}}),
+          React.createElement(Btn,{small:true,onClick:function(){setModal("addPt")}},"+ إضافة")),
+        filtered.map(function(x){return React.createElement(Cd,{key:x.id,onClick:function(){setSelPt(x.id);setTab("pt_detail");setSubTab("info")}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10}},
+            React.createElement("div",{style:{width:38,height:38,borderRadius:12,background:C.priL,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}},x.gender==="أنثى"?"👧":"👦"),
+            React.createElement("div",{style:{flex:1}},React.createElement("div",{style:{fontSize:13,fontWeight:600,color:C.txt}},x.name),React.createElement("div",{style:{fontSize:11,color:C.txtL}},(x.age||"")+" سنة • رصيد: "+(x.balance||0)+" ₪")),
+            React.createElement("span",{style:{color:C.txtL}},"‹"))
+        )}),
+        modal==="addPt"&&React.createElement(PatientForm,{onClose:function(){setModal(null)}})
+      ),
+      // Patient detail
+      tab==="pt_detail"&&pt&&React.createElement("div",null,
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:12}},
+          React.createElement("button",{onClick:function(){setTab("patients");setSelPt(null)},style:{background:C.bg,border:"none",width:32,height:32,borderRadius:8,cursor:"pointer",color:C.txtL}},"→"),
+          React.createElement("h3",{style:{margin:0,fontSize:15,color:C.txt,flex:1}},pt.name+" (رصيد: "+(pt.balance||0)+" ₪)"),
+          React.createElement(Btn,{small:true,v:"ghost",onClick:function(){setModal("editPt")}},"✏️"),
+          React.createElement(Btn,{small:true,v:"ghost",onClick:function(){if(confirm("حذف "+pt.name+"؟")){fbDelete("patients",pt.id);setTab("patients");setSelPt(null)}},s:{color:C.err}},"🗑️")),
+        // Balance control
+        React.createElement(Cd,{style:{display:"flex",alignItems:"center",justifyContent:"space-between",background:balance>=0?C.okL:C.errL}},
+          React.createElement("div",null,React.createElement("div",{style:{fontSize:11,color:C.txtL}},"الرصيد"),React.createElement("div",{style:{fontSize:22,fontWeight:700,color:balance>=0?C.ok:C.err}},balance+" ₪")),
+          React.createElement(Btn,{small:true,v:"out",onClick:function(){var v=prompt("الرصيد الجديد:",balance);if(v!==null&&!isNaN(v))fbUpdate("patients",pt.id,{balance:Number(v)})}},"تعديل الرصيد")),
+        // Sub tabs
+        React.createElement("div",{style:{display:"flex",gap:4,marginBottom:12,overflowX:"auto",paddingBottom:4}},subs.map(function(t){return React.createElement("button",{key:t.k,onClick:function(){setSubTab(t.k)},style:{padding:"6px 10px",borderRadius:8,border:"none",fontSize:10,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap",fontFamily:"inherit",background:subTab===t.k?C.pri:C.bg,color:subTab===t.k?"#fff":C.txtL}},t.l)})),
+        // Info
+        subTab==="info"&&React.createElement(Cd,null,[["المستخدم",pt.user],["العمر",(pt.age||"")+" سنة"],["الجنس",pt.gender],["الطول",(pt.height||"")+" سم"],["الوزن",(pt.weight||"")+" كغ"],["الهاتف",pt.phone],["الحالة",pt.status]].map(function(r,i){return React.createElement("div",{key:i,style:{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:i<6?"1px solid "+C.brd:"none",fontSize:12}},React.createElement("span",{style:{color:C.txtL}},r[0]),React.createElement("span",{style:{fontWeight:600,color:C.txt}},r[1]))})),
+        // Meds
+        subTab==="meds"&&React.createElement("div",null,
+          React.createElement(Btn,{small:true,onClick:function(){setModal("addMed")},s:{marginBottom:10}},"+ إضافة دواء"),
+          ptMeds.map(function(m){return React.createElement(Cd,{key:m.id,style:{display:"flex",alignItems:"center",justifyContent:"space-between"}},React.createElement("div",null,React.createElement("div",{style:{fontSize:13,fontWeight:600,color:C.txt}},m.name),React.createElement("div",{style:{fontSize:11,color:C.txtL}},m.dose+" • "+m.time)),React.createElement("div",{style:{display:"flex",gap:6}},React.createElement("button",{onClick:function(){fbUpdate("meds",m.id,{active:!m.active})},style:{background:"none",border:"none",cursor:"pointer"}},React.createElement(Bg,{text:m.active?"فعّال":"متوقف",color:m.active?"ok":"warn"})),React.createElement("button",{onClick:function(){fbDelete("meds",m.id)},style:{background:"none",border:"none",color:C.err,cursor:"pointer"}},"✕")))})),
+        // Appts
+        subTab==="appts"&&React.createElement("div",null,
+          React.createElement(Btn,{small:true,onClick:function(){setModal("addAppt")},s:{marginBottom:10}},"+ إضافة موعد"),
+          ptAppts.map(function(a){return React.createElement(Cd,{key:a.id,style:{display:"flex",alignItems:"center",justifyContent:"space-between"}},React.createElement("div",null,React.createElement("div",{style:{fontSize:13,fontWeight:600,color:C.txt}},a.type),React.createElement("div",{style:{fontSize:11,color:C.txtL}},a.date+" • "+a.time)),React.createElement("div",{style:{display:"flex",gap:6}},React.createElement("button",{onClick:function(){fbUpdate("appts",a.id,{status:a.status==="قادم"?"تم":"قادم"})},style:{background:"none",border:"none",cursor:"pointer"}},React.createElement(Bg,{text:a.status,color:a.status==="قادم"?"warn":"ok"})),React.createElement("button",{onClick:function(){fbDelete("appts",a.id)},style:{background:"none",border:"none",color:C.err,cursor:"pointer"}},"✕")))})),
+        // Payments
+        subTab==="pay"&&React.createElement("div",null,
+          React.createElement(Btn,{small:true,v:"ok",onClick:function(){setModal("addPay")},s:{marginBottom:10}},"+ إضافة دفعة"),
+          React.createElement(Cd,{style:{background:C.priL}},PAY_INFO.map(function(x,i){return React.createElement("div",{key:i,style:{display:"flex",justifyContent:"space-between",padding:"4px 0",fontSize:11}},React.createElement("span",{style:{color:C.txtL}},x.m),React.createElement("span",{style:{fontWeight:700,color:C.txt,direction:"ltr",letterSpacing:1}},x.n))})),
+          ptPay.map(function(x){return React.createElement(Cd,{key:x.id,style:{display:"flex",alignItems:"center",justifyContent:"space-between"}},React.createElement("div",null,React.createElement("div",{style:{fontSize:13,fontWeight:600,color:C.txt}},x.desc),React.createElement("div",{style:{fontSize:11,color:C.txtL}},x.date)),React.createElement("div",{style:{display:"flex",gap:6,alignItems:"center"}},React.createElement("div",null,React.createElement("div",{style:{fontSize:14,fontWeight:700}},x.amount+" ₪"),React.createElement("button",{onClick:function(){fbUpdate("payments",x.id,{paid:!x.paid})},style:{background:"none",border:"none",cursor:"pointer",padding:0}},React.createElement(Bg,{text:x.paid?"مدفوع ✓":"غير مدفوع",color:x.paid?"ok":"err"}))),React.createElement("button",{onClick:function(){fbDelete("payments",x.id)},style:{background:"none",border:"none",color:C.err,cursor:"pointer"}},"✕")))})),
+        // Files (lab results from patient)
+        subTab==="files"&&React.createElement("div",null,
+          React.createElement("h4",{style:{fontSize:13,color:C.txt,margin:"0 0 8px"}},"📎 ملفات وتحاليل المريض"),
+          ptFiles.length===0&&React.createElement("p",{style:{color:C.txtL,fontSize:12,textAlign:"center"}},"لا يوجد ملفات مرفوعة"),
+          React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}},ptFiles.map(function(f){return React.createElement(Cd,{key:f.id,style:{padding:8,textAlign:"center"}},React.createElement("img",{src:f.data,alt:"",style:{width:"100%",height:80,objectFit:"cover",borderRadius:8,marginBottom:4}}),React.createElement("div",{style:{fontSize:10,color:C.txtL}},f.name),React.createElement("div",{style:{fontSize:9,color:C.txtL}},f.date),React.createElement("button",{onClick:function(){fbDelete("files",f.id)},style:{background:"none",border:"none",color:C.err,cursor:"pointer",fontSize:10,marginTop:4}},"حذف"))}))),
+        // Receipts
+        subTab==="receipts"&&React.createElement("div",null,
+          React.createElement("h4",{style:{fontSize:13,color:C.txt,margin:"0 0 8px"}},"🧾 إشعارات الدفع"),
+          ptReceipts.length===0&&React.createElement("p",{style:{color:C.txtL,fontSize:12,textAlign:"center"}},"لا يوجد إشعارات"),
+          ptReceipts.map(function(r){return React.createElement(Cd,{key:r.id},React.createElement("div",{style:{display:"flex",gap:10}},React.createElement("img",{src:r.image,alt:"",style:{width:70,height:50,objectFit:"cover",borderRadius:8}}),React.createElement("div",{style:{flex:1}},React.createElement("div",{style:{fontSize:13,fontWeight:600,color:C.txt}},r.amount+" ₪"),React.createElement("div",{style:{fontSize:11,color:C.txtL}},r.date),React.createElement(Bg,{text:r.approved?"تم التأكيد":"بانتظار المراجعة",color:r.approved?"ok":"warn"}))),React.createElement("button",{onClick:function(){if(!r.approved){fbUpdate("receipts",r.id,{approved:true});fbUpdate("patients",pt.id,{balance:(pt.balance||0)+r.amount})}},style:{background:"none",border:"none",color:C.ok,cursor:"pointer",fontSize:12}},r.approved?"✅":"تأكيد"))})),
+        // Notes
+        subTab==="notes"&&React.createElement("div",null,
+          React.createElement(Btn,{small:true,onClick:function(){setModal("note")},s:{marginBottom:10}},"+ ملاحظة"),
+          ptNotes.map(function(n){return React.createElement(Cd,{key:n.id},React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:6}},React.createElement("span",{style:{fontSize:11,color:C.pri}},"🩺 "+n.by),React.createElement("span",{style:{fontSize:10,color:C.txtL}},n.date)),React.createElement("div",{style:{fontSize:13,color:C.txt,lineHeight:1.6}},n.text),React.createElement("button",{onClick:function(){fbDelete("notes",n.id)},style:{background:"none",border:"none",color:C.err,cursor:"pointer",fontSize:10,marginTop:6}},"حذف"))})),
+        // Messages
+        subTab==="msg"&&React.createElement("div",null,
+          React.createElement("div",{style:{background:C.bg,borderRadius:14,padding:14,height:250,overflow:"auto",marginBottom:10,border:"1px solid "+C.brd}},
+            ptMsgs.map(function(m,i){return React.createElement("div",{key:i,style:{display:"flex",justifyContent:m.from==="admin"?"flex-start":"flex-end",marginBottom:8}},React.createElement("div",{style:{maxWidth:"75%",padding:"8px 12px",borderRadius:12,fontSize:13,background:m.from==="admin"?C.priL:C.card,color:C.txt,border:m.from==="admin"?"none":"1px solid "+C.brd}},React.createElement("div",{style:{fontSize:10,color:C.txtL,marginBottom:2}},(m.from==="admin"?"🩺 العيادة":"🙋 المريض")+" • "+m.time),m.text))}),
+            React.createElement("div",{ref:msgEnd})),
+          React.createElement("div",{style:{display:"flex",gap:8}},
+            React.createElement("input",{value:msgT,onChange:function(e){setMsgT(e.target.value)},placeholder:"رسالة...",onKeyDown:function(e){if(e.key==="Enter"&&msgT.trim()){fbAdd("messages",{text:msgT.trim(),from:"admin",patientId:selPt,time:new Date().toLocaleTimeString("ar",{hour:"2-digit",minute:"2-digit"})});setMsgT("")}},style:{flex:1,padding:"10px 14px",borderRadius:10,border:"1.5px solid "+C.brd,fontSize:13,outline:"none",direction:"rtl",fontFamily:"inherit"}}),
+            React.createElement(Btn,{small:true,onClick:function(){if(msgT.trim()){fbAdd("messages",{text:msgT.trim(),from:"admin",patientId:selPt,time:new Date().toLocaleTimeString("ar",{hour:"2-digit",minute:"2-digit"})});setMsgT("")}}},"إرسال"))),
+        // Modals
+        modal==="editPt"&&React.createElement(PatientForm,{patient:pt,onClose:function(){setModal(null)}}),
+        modal==="addMed"&&React.createElement(Modal,{title:"إضافة دواء",onClose:function(){setModal(null)}},React.createElement(MedForm,{ptId:selPt,onClose:function(){setModal(null)}})),
+        modal==="addAppt"&&React.createElement(Modal,{title:"إضافة موعد",onClose:function(){setModal(null)}},React.createElement(ApptForm,{ptId:selPt,onClose:function(){setModal(null)}})),
+        modal==="addPay"&&React.createElement(Modal,{title:"إضافة دفعة",onClose:function(){setModal(null)}},React.createElement(PayFormAdmin,{ptId:selPt,onClose:function(){setModal(null)}})),
+        modal==="note"&&React.createElement(Modal,{title:"ملاحظة طبية",onClose:function(){setModal(null)}},React.createElement(NoteForm,{ptId:selPt,onClose:function(){setModal(null)}}))
+      ),
+      // Settings
+      tab==="settings"&&React.createElement("div",null,
+        React.createElement("h3",{style:{fontSize:16,color:C.txt,margin:"0 0 14px"}},"⚙️ الإعدادات"),
+        React.createElement(Cd,null,[["الاسم","عيادة د. أسامة لبد"],["التخصص","التغذية وعلاج مشاكل النمو"],["الموقع","غزة"]].map(function(r,i){return React.createElement("div",{key:i,style:{display:"flex",justifyContent:"space-between",padding:"6px 0",fontSize:12,borderBottom:i<2?"1px solid "+C.brd:"none"}},React.createElement("span",{style:{color:C.txtL}},r[0]),React.createElement("span",{style:{fontWeight:600,color:C.txt}},r[1]))})))
+    ),
+    // Nav
+    React.createElement("div",{style:{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:C.card,borderTop:"1px solid "+C.brd,display:"flex",justifyContent:"space-around",padding:"8px 0 12px",zIndex:10}},navTabs.map(function(t){return React.createElement("button",{key:t.k,onClick:function(){setTab(t.k);if(t.k!=="pt_detail")setSelPt(null)},style:{background:"none",border:"none",cursor:"pointer",fontSize:11,color:(tab===t.k||(t.k==="patients"&&tab==="pt_detail"))?C.pri:C.txtL,fontWeight:(tab===t.k||(t.k==="patients"&&tab==="pt_detail"))?600:400,fontFamily:"inherit"}},t.l)}))
+  )
+}
+
+// Shared form components
+function MedForm(p){var s=useState({name:"",dose:"",time:"",active:true}),f=s[0],setF=s[1];return React.createElement(React.Fragment,null,React.createElement(Inp,{label:"اسم الدواء",value:f.name,onChange:function(v){setF(function(o){return Object.assign({},o,{name:v})})}}),React.createElement(Inp,{label:"الجرعة",value:f.dose,onChange:function(v){setF(function(o){return Object.assign({},o,{dose:v})})}}),React.createElement(Inp,{label:"وقت الأخذ",value:f.time,onChange:function(v){setF(function(o){return Object.assign({},o,{time:v})})}}),React.createElement(Btn,{full:true,onClick:function(){if(!f.name)return;fbAdd("meds",Object.assign({},f,{patientId:p.ptId}));p.onClose()}},"💊 إضافة"))}
+function ApptForm(p){var s=useState({date:"",time:"",type:"",status:"قادم"}),f=s[0],setF=s[1];return React.createElement(React.Fragment,null,React.createElement(Inp,{label:"التاريخ",type:"date",value:f.date,onChange:function(v){setF(function(o){return Object.assign({},o,{date:v})})}}),React.createElement(Inp,{label:"الوقت",value:f.time,onChange:function(v){setF(function(o){return Object.assign({},o,{time:v})})}}),React.createElement(Inp,{label:"نوع الزيارة",value:f.type,onChange:function(v){setF(function(o){return Object.assign({},o,{type:v})})}}),React.createElement(Btn,{full:true,onClick:function(){if(!f.date||!f.type)return;fbAdd("appts",Object.assign({},f,{patientId:p.ptId}));p.onClose()}},"📅 إضافة"))}
+function PayFormAdmin(p){var s=useState({date:new Date().toISOString().slice(0,10),desc:"",amount:"",paid:false}),f=s[0],setF=s[1];return React.createElement(React.Fragment,null,React.createElement(Inp,{label:"التاريخ",type:"date",value:f.date,onChange:function(v){setF(function(o){return Object.assign({},o,{date:v})})}}),React.createElement(Inp,{label:"الوصف",value:f.desc,onChange:function(v){setF(function(o){return Object.assign({},o,{desc:v})})}}),React.createElement(Inp,{label:"المبلغ (₪)",value:f.amount,onChange:function(v){setF(function(o){return Object.assign({},o,{amount:v})})}}),React.createElement("label",{style:{display:"flex",alignItems:"center",gap:8,fontSize:13,color:C.txt,margin:"0 0 12px"}},React.createElement("input",{type:"checkbox",checked:f.paid,onChange:function(e){setF(function(o){return Object.assign({},o,{paid:e.target.checked})})}})," تم الدفع"),React.createElement(Btn,{full:true,v:"ok",onClick:function(){if(!f.amount)return;fbAdd("payments",Object.assign({},f,{amount:Number(f.amount),patientId:p.ptId}));p.onClose()}},"💰 إضافة"))}
+function NoteForm(p){var s=useState(""),t=s[0],setT=s[1];return React.createElement(React.Fragment,null,React.createElement(Inp,{label:"الملاحظة",value:t,onChange:setT,textarea:true}),React.createElement(Btn,{full:true,onClick:function(){if(!t)return;fbAdd("notes",{text:t,patientId:p.ptId,date:new Date().toLocaleDateString("ar"),by:"د. أسامة"});p.onClose()}},"📝 حفظ"))}
+
+// ─── PATIENT APP ───
+function PatientApp(p){
+  var s1=useState("home"),tab=s1[0],setTab=s1[1];
+  var s2=useState(""),msgT=s2[0],setMsgT=s2[1];
+  var s3=useState(null),receipt=s3[0],setReceipt=s3[1];
+  var s4=useState(""),payAmt=s4[0],setPayAmt=s4[1];
+  var s5=useState(false),payDone=s5[0],setPayDone=s5[1];
+  var msgEnd=useRef();
+  var ptS=useState(p.patient),ptDoc=ptS[0],setPtDoc=ptS[1];
+  useEffect(function(){return db.collection("patients").doc(p.patient.id).onSnapshot(function(s){if(s.exists)setPtDoc(Object.assign({id:s.id},s.data()))})},[]);
+  var meds=useFB("meds",function(r){return r.where("patientId","==",p.patient.id)})[0];
+  var appts=useFB("appts",function(r){return r.where("patientId","==",p.patient.id)})[0];
+  var payments=useFB("payments",function(r){return r.where("patientId","==",p.patient.id)})[0];
+  var notes=useFB("notes",function(r){return r.where("patientId","==",p.patient.id)})[0];
+  var messages=useFB("messages",function(r){return r.where("patientId","==",p.patient.id)})[0];
+  var files=useFB("files",function(r){return r.where("patientId","==",p.patient.id)})[0];
+  var sortedMsgs=messages.sort(function(a,b){return a.createdAt-b.createdAt});
+  useEffect(function(){if(msgEnd.current)msgEnd.current.scrollIntoView({behavior:"smooth"})},[sortedMsgs.length]);
+  var pt=ptDoc;
+  var balance=pt.balance||0;
+  var tabs=[{k:"home",l:"الرئيسية",i:"🏠"},{k:"file",l:"ملفي",i:"📄"},{k:"meds",l:"الأدوية",i:"💊"},{k:"appts",l:"المواعيد",i:"📅"},{k:"pay",l:"الدفع",i:"💰"},{k:"msg",l:"الرسائل",i:"💬"}];
+
+  return React.createElement("div",{style:{minHeight:"100vh",background:C.bg,direction:"rtl",maxWidth:430,margin:"0 auto",fontFamily:"'Segoe UI',Tahoma,Arial,sans-serif"}},
+    React.createElement("div",{style:{background:C.card,padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:"1px solid "+C.brd,position:"sticky",top:0,zIndex:10}},
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6}},React.createElement("img",{src:LOGO,alt:"",style:{width:28}}),React.createElement("span",{style:{fontSize:13,fontWeight:700,color:C.txt}},"عيادة د. أسامة لبد")),
+      React.createElement("button",{onClick:p.onLogout,style:{background:"none",border:"none",color:C.txtL,cursor:"pointer",fontSize:11}},"خروج")),
+    React.createElement("div",{style:{padding:"12px 14px 85px"}},
+      // Home
+      tab==="home"&&React.createElement("div",null,
+        React.createElement("div",{style:{background:"linear-gradient(135deg,"+C.pri+","+C.priD+")",borderRadius:16,padding:16,color:"#fff",marginBottom:12}},
+          React.createElement("div",{style:{fontSize:16,fontWeight:700}},"أهلاً، "+pt.name),
+          React.createElement("div",{style:{fontSize:11,opacity:.8}},(pt.age||"")+" سنة • "+pt.status)),
+        React.createElement("div",{style:{display:"flex",gap:8,marginBottom:12}},
+          [["📏","الطول",(pt.height||"")+" سم"],["⚖️","الوزن",(pt.weight||"")+" كغ"]].map(function(x,i){return React.createElement(Cd,{key:i,style:{flex:1,textAlign:"center"}},React.createElement("div",{style:{fontSize:10,color:C.txtL}},x[1]),React.createElement("div",{style:{fontSize:17,fontWeight:700,color:C.txt}},x[2]))})),
+        // Balance card
+        React.createElement(Cd,{style:{textAlign:"center",background:balance>=0?C.okL:C.errL,border:"1.5px solid "+(balance>=0?C.ok:C.err)+"30"}},
+          React.createElement("div",{style:{fontSize:11,color:C.txtL}},"رصيدي"),
+          React.createElement("div",{style:{fontSize:28,fontWeight:700,color:balance>=0?C.ok:C.err,margin:"4px 0"}},balance+" ₪"))
+      ),
+      // My file
+      tab==="file"&&React.createElement("div",null,
+        React.createElement("h3",{style:{fontSize:16,color:C.txt,margin:"0 0 12px"}},"ملفي الطبي"),
+        React.createElement(Cd,null,[["الاسم",pt.name],["العمر",(pt.age||"")+" سنة"],["الجنس",pt.gender],["الطول",(pt.height||"")+" سم"],["الوزن",(pt.weight||"")+" كغ"],["الحالة",pt.status]].map(function(r,i){return React.createElement("div",{key:i,style:{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:i<5?"1px solid "+C.brd:"none",fontSize:12}},React.createElement("span",{style:{color:C.txtL}},r[0]),React.createElement("span",{style:{fontWeight:600,color:C.txt}},r[1]))})),
+        // Upload files
+        React.createElement("h4",{style:{fontSize:13,color:C.txt,margin:"12px 0 8px"}},"📎 رفع تحاليل / صور"),
+        React.createElement(FileUp,{label:"ارفع صورة تحاليل أو أشعة",onUpload:function(f){fbAdd("files",Object.assign({},f,{patientId:p.patient.id}))}}),
+        files.length>0&&React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}},files.map(function(f){return React.createElement("div",{key:f.id,style:{borderRadius:8,overflow:"hidden",border:"1px solid "+C.brd}},React.createElement("img",{src:f.data,alt:"",style:{width:"100%",height:60,objectFit:"cover"}}),React.createElement("div",{style:{padding:4,fontSize:9,color:C.txtL,textAlign:"center"}},f.date))})),
+        // Notes
+        notes.length>0&&React.createElement("h4",{style:{fontSize:13,color:C.txt,margin:"12px 0 8px"}},"📝 ملاحظات الطبيب"),
+        notes.map(function(n){return React.createElement(Cd,{key:n.id},React.createElement("div",{style:{fontSize:10,color:C.pri,marginBottom:4}},"🩺 "+n.by+" — "+n.date),React.createElement("div",{style:{fontSize:12,color:C.txt,lineHeight:1.6}},n.text))})
+      ),
+      // Meds
+      tab==="meds"&&React.createElement("div",null,
+        React.createElement("h3",{style:{fontSize:16,color:C.txt,margin:"0 0 12px"}},"💊 أدويتي"),
+        meds.length===0&&React.createElement("p",{style:{color:C.txtL,fontSize:12,textAlign:"center"}},"لا يوجد أدوية"),
+        meds.map(function(m){return React.createElement(Cd,{key:m.id,style:{display:"flex",alignItems:"center",gap:10,opacity:m.active?1:.5}},React.createElement("div",{style:{flex:1}},React.createElement("div",{style:{fontSize:13,fontWeight:600,color:C.txt}},m.name),React.createElement("div",{style:{fontSize:11,color:C.txtL}},m.dose+" • "+m.time)),React.createElement(Bg,{text:m.active?"فعّال":"متوقف",color:m.active?"ok":"warn"}))})),
+      // Appts
+      tab==="appts"&&React.createElement("div",null,
+        React.createElement("h3",{style:{fontSize:16,color:C.txt,margin:"0 0 12px"}},"📅 مواعيدي"),
+        appts.map(function(a){return React.createElement(Cd,{key:a.id,style:{display:"flex",alignItems:"center",justifyContent:"space-between"}},React.createElement("div",null,React.createElement("div",{style:{fontSize:13,fontWeight:600,color:C.txt}},a.type),React.createElement("div",{style:{fontSize:11,color:C.txtL}},a.date+" • "+a.time)),React.createElement(Bg,{text:a.status,color:a.status==="قادم"?"warn":"ok"}))})),
+      // Pay
+      tab==="pay"&&React.createElement("div",null,
+        React.createElement("h3",{style:{fontSize:16,color:C.txt,margin:"0 0 12px"}},"💰 المدفوعات"),
+        React.createElement(Cd,{style:{background:C.priL}},PAY_INFO.map(function(x,i){return React.createElement("div",{key:i,style:{display:"flex",justifyContent:"space-between",padding:"4px 0",fontSize:11}},React.createElement("span",{style:{color:C.txtL}},x.m),React.createElement("span",{style:{fontWeight:700,color:C.txt,direction:"ltr",letterSpacing:1}},x.n))})),
+        // Balance
+        React.createElement(Cd,{style:{textAlign:"center",background:balance>=0?C.okL:C.errL}},
+          React.createElement("div",{style:{fontSize:11,color:C.txtL}},"رصيدي الحالي"),
+          React.createElement("div",{style:{fontSize:24,fontWeight:700,color:balance>=0?C.ok:C.err}},balance+" ₪")),
+        // Upload receipt
+        !payDone&&React.createElement(Cd,{style:{border:"1.5px solid "+C.pri+"30"}},
+          React.createElement("div",{style:{fontSize:13,fontWeight:600,color:C.txt,marginBottom:8}},"💳 دفع وإرفاق إشعار"),
+          React.createElement(Inp,{label:"المبلغ المدفوع (₪)",type:"number",value:payAmt,onChange:setPayAmt}),
+          React.createElement(FileUp,{label:"📸 صورة إشعار الدفع",onUpload:function(f){setReceipt(f.data)}}),
+          receipt&&React.createElement("div",{style:{textAlign:"center",marginBottom:8}},React.createElement("img",{src:receipt,alt:"",style:{width:100,height:70,objectFit:"cover",borderRadius:8}}),React.createElement("p",{style:{fontSize:10,color:C.ok}},"✓ تم رفع الإشعار")),
+          React.createElement(Btn,{full:true,v:"ok",disabled:!payAmt||!receipt,onClick:function(){fbAdd("receipts",{amount:Number(payAmt),image:receipt,patientId:p.patient.id,date:new Date().toLocaleDateString("ar"),approved:false});setPayDone(true)}},"✅ إرسال للعيادة")),
+        payDone&&React.createElement(Cd,{style:{textAlign:"center",padding:20}},React.createElement("div",{style:{fontSize:32}},"✅"),React.createElement("div",{style:{fontSize:14,fontWeight:700,color:C.ok,margin:"8px 0"}},"تم إرسال الإشعار!"),React.createElement("div",{style:{fontSize:12,color:C.txtL}},"سيتم تحديث رصيدك بعد مراجعة الإشعار"),React.createElement(Btn,{small:true,v:"out",onClick:function(){setPayDone(false);setReceipt(null);setPayAmt("")},s:{marginTop:10}},"إرسال إشعار آخر")),
+        // Payment history
+        payments.map(function(x){return React.createElement(Cd,{key:x.id,style:{display:"flex",alignItems:"center",justifyContent:"space-between"}},React.createElement("div",null,React.createElement("div",{style:{fontSize:13,fontWeight:600,color:C.txt}},x.desc),React.createElement("div",{style:{fontSize:11,color:C.txtL}},x.date)),React.createElement("div",{style:{textAlign:"left"}},React.createElement("div",{style:{fontSize:14,fontWeight:700}},x.amount+" ₪"),React.createElement(Bg,{text:x.paid?"مدفوع ✓":"غير مدفوع",color:x.paid?"ok":"err"})))})
+      ),
+      // Messages
+      tab==="msg"&&React.createElement("div",null,
+        React.createElement("h3",{style:{fontSize:16,color:C.txt,margin:"0 0 12px"}},"💬 رسائل العيادة"),
+        React.createElement("div",{style:{background:C.bg,borderRadius:14,padding:14,height:280,overflow:"auto",marginBottom:10,border:"1px solid "+C.brd}},
+          sortedMsgs.length===0&&React.createElement("p",{style:{color:C.txtL,fontSize:12,textAlign:"center",marginTop:40}},"لا توجد رسائل"),
+          sortedMsgs.map(function(m,i){return React.createElement("div",{key:i,style:{display:"flex",justifyContent:m.from==="admin"?"flex-start":"flex-end",marginBottom:8}},React.createElement("div",{style:{maxWidth:"75%",padding:"8px 12px",borderRadius:12,fontSize:13,background:m.from==="admin"?C.priL:C.card,color:C.txt,border:m.from==="admin"?"none":"1px solid "+C.brd}},React.createElement("div",{style:{fontSize:10,color:C.txtL,marginBottom:2}},(m.from==="admin"?"🩺 العيادة":"🙋 أنا")+" • "+m.time),m.text))}),
+          React.createElement("div",{ref:msgEnd})),
+        React.createElement("div",{style:{display:"flex",gap:8}},
+          React.createElement("input",{value:msgT,onChange:function(e){setMsgT(e.target.value)},placeholder:"اكتب رسالة...",onKeyDown:function(e){if(e.key==="Enter"&&msgT.trim()){fbAdd("messages",{text:msgT.trim(),from:"patient",patientId:p.patient.id,time:new Date().toLocaleTimeString("ar",{hour:"2-digit",minute:"2-digit"})});setMsgT("")}},style:{flex:1,padding:"10px 14px",borderRadius:10,border:"1.5px solid "+C.brd,fontSize:13,outline:"none",direction:"rtl",fontFamily:"inherit"}}),
+          React.createElement(Btn,{small:true,onClick:function(){if(msgT.trim()){fbAdd("messages",{text:msgT.trim(),from:"patient",patientId:p.patient.id,time:new Date().toLocaleTimeString("ar",{hour:"2-digit",minute:"2-digit"})});setMsgT("")}}},"إرسال")))
+    ),
+    // Nav
+    React.createElement("div",{style:{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:C.card,borderTop:"1px solid "+C.brd,display:"flex",justifyContent:"space-around",padding:"6px 0 10px",zIndex:10}},
+      tabs.map(function(t){return React.createElement("button",{key:t.k,onClick:function(){setTab(t.k)},style:{background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:1,padding:"3px 4px",color:tab===t.k?C.pri:C.txtL,fontFamily:"inherit"}},React.createElement("span",{style:{fontSize:16}},t.i),React.createElement("span",{style:{fontSize:9,fontWeight:tab===t.k?600:400}},t.l))}))
+  )
+}
+
+// ─── MAIN ───
+function App(){
+  var s1=useState(null),role=s1[0],setRole=s1[1];
+  var s2=useState(null),patient=s2[0],setPatient=s2[1];
+  function login(r,p){setRole(r);setPatient(p)}
+  function logout(){setRole(null);setPatient(null)}
+  if(!role)return React.createElement(LoginScreen,{onLogin:login});
+  if(role==="admin")return React.createElement(AdminApp,{onLogout:logout});
+  return React.createElement(PatientApp,{patient:patient,onLogout:logout})
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script></body></html>
