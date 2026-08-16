@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0D7C66">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="عيادة لبد">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="https://i.ibb.co/4RjBFsWQ/image.png">
+<title>عيادة د. أسامة لبد</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+input,select,textarea,button{font-family:inherit}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:#ccc;border-radius:4px}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/Recharts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-type="module">
+const {useState,useRef,useEffect} = React;
+const {LineChart,Line,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer} = Recharts;
+
+/* ═══════════════════════════════════════════════════════
+   عيادة د. أسامة لبد — النسخة الكاملة V5
+   ═══════════════════════════════════════════════════════ */
+
+// ─── THEME ───
+const light = { bg:"#F0F4F8",card:"#FFFFFF",pri:"#0D7C66",priL:"#E8F5F1",priD:"#095C4B",acc:"#FF6B35",err:"#DC3545",errL:"#FFF0F0",txt:"#1A1A2E",txtS:"#6B7280",txtL:"#FFFFFF",brd:"#E5E7EB",ok:"#10B981",okL:"#ECFDF5",wrn:"#F59E0B",wrnL:"#FFFBEB",neg:"#EF4444" };
+const dark = { bg:"#0F172A",card:"#1E293B",pri:"#10B981",priL:"#1a3a2e",priD:"#6EE7B7",acc:"#FB923C",err:"#F87171",errL:"#3B1C1C",txt:"#F1F5F9",txtS:"#94A3B8",txtL:"#F1F5F9",brd:"#334155",ok:"#34D399",okL:"#1a3a2e",wrn:"#FBBF24",wrnL:"#3B3520",neg:"#F87171" };
+
+const LOGO = "https://i.ibb.co/4RjBFsWQ/image.png";
+const PAY_METHODS = [
+  { name:"حساب بنكي", num:"0599406182" },
+  { name:"PalPay", num:"0598165437" },
+  { name:"JawwalPay", num:"0599406182" },
+];
+
+// ─── SVG ICONS ───
+const I = {
+  Home:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><path d="M3 12l9-9 9 9"/><path d="M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10"/></svg>,
+  File:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
+  Pill:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><rect x="3" y="11" width="18" height="6" rx="3"/><circle cx="12" cy="6" r="3"/></svg>,
+  Cal:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  Pay:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>,
+  Clip:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>,
+  Msg:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>,
+  Chart:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+  Bell:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
+  Cam:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>,
+  Up:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>,
+  Users:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
+  Out:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+  Plus:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  Edit:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+  Del:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>,
+  Check:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><polyline points="20 6 9 17 4 12"/></svg>,
+  X:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  Img:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
+  Wallet:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
+  Lock:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>,
+  Moon:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>,
+  Sun:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>,
+  Report:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
+  Send:({s=20}={})=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={s} height={s}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+};
+
+// ─── INITIAL PATIENTS ───
+const initPts = () => [
+  { id:1, name:"أحمد محمد", user:"ahmad01", pass:"1234", age:8, phone:"0599111222",
+    weight:25, height:120, diagnosis:"نقص نمو", balance:150,
+    meds:[{id:1,name:"فيتامين د",dose:"1000 وحدة",time:"صباحاً"},{id:2,name:"زنك",dose:"10 ملغ",time:"مساءً"}],
+    appointments:[{id:1,date:"2026-08-20",time:"10:00",status:"upcoming",note:"متابعة شهرية"}],
+    payments:[{id:1,date:"2026-08-01",amount:100,method:"JawwalPay",status:"confirmed"}],
+    program:{name:"برنامج تغذية علاجية",steps:["تقييم أولي","خطة غذائية","متابعة شهرية"],current:1},
+    labPhotos:[], paymentReceipts:[],
+    notes:"يحتاج متابعة وزن شهرية",
+    growthData:[{month:"يناير",weight:22,height:115},{month:"فبراير",weight:22.5,height:116},{month:"مارس",weight:23,height:117},{month:"أبريل",weight:23.8,height:118},{month:"مايو",weight:24.2,height:119},{month:"يونيو",weight:24.8,height:119.5},{month:"يوليو",weight:25,height:120}],
+    messages:[{id:1,from:"clinic",text:"أهلاً أحمد، لا تنسى موعدك يوم 20/8",date:"2026-08-15",time:"09:00"}],
+    notifications:[{id:1,text:"موعدك القادم بعد 4 أيام",date:"2026-08-16",read:false}],
+  },
+  { id:2, name:"سارة أحمد", user:"sara02", pass:"5678", age:5, phone:"0598333444",
+    weight:16, height:100, diagnosis:"سوء تغذية", balance:-50,
+    meds:[{id:1,name:"حديد",dose:"15 ملغ",time:"بعد الأكل"}],
+    appointments:[{id:1,date:"2026-08-25",time:"11:00",status:"upcoming",note:"فحص دم"}],
+    payments:[], program:{name:"برنامج تعويض غذائي",steps:["فحص شامل","مكملات","نظام غذائي","متابعة"],current:2},
+    labPhotos:[], paymentReceipts:[], notes:"",
+    growthData:[{month:"يناير",weight:14,height:95},{month:"مارس",weight:14.8,height:97},{month:"مايو",weight:15.5,height:99},{month:"يوليو",weight:16,height:100}],
+    messages:[], notifications:[],
+  },
+];
+
+// ─── HELPERS ───
+const Badge = ({text,color,T}) => {
+  const colors = {ok:{bg:T?.okL||"#ECFDF5",c:T?.ok||"#10B981"},err:{bg:T?.errL||"#FFF0F0",c:T?.err||"#DC3545"},wrn:{bg:T?.wrnL||"#FFFBEB",c:T?.wrn||"#F59E0B"},pri:{bg:T?.priL||"#E8F5F1",c:T?.pri||"#0D7C66"}};
+  const cl = colors[color]||colors.pri;
+  return <span style={{background:cl.bg,color:cl.c,padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600,display:"inline-block"}}>{text}</span>;
+};
+const Card = ({children,style={},T})=><div style={{background:T.card,borderRadius:14,padding:16,marginBottom:12,boxShadow:"0 1px 4px rgba(0,0,0,0.06)",...style}}>{children}</div>;
+const Btn = ({children,onClick,bg,color,disabled,full=true,style={}})=><button onClick={onClick} disabled={disabled} style={{background:disabled?"#ccc":(bg||"#0D7C66"),color:color||"#fff",border:"none",borderRadius:10,padding:"12px 20px",fontSize:14,fontWeight:600,cursor:disabled?"default":"pointer",width:full?"100%":"auto",display:"flex",alignItems:"center",justifyContent:"center",gap:8,opacity:disabled?0.6:1,...style}}>{children}</button>;
+const BtnSm = ({children,onClick,bg,color,style={}})=><button onClick={onClick} style={{background:bg||"#0D7C66",color:color||"#fff",border:"none",borderRadius:8,padding:"8px 14px",fontSize:12,fontWeight:600,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:4,...style}}>{children}</button>;
+const Input = ({T,...props})=><input {...props} style={{width:"100%",padding:"10px 14px",borderRadius:10,border:`1px solid ${T.brd}`,fontSize:14,outline:"none",boxSizing:"border-box",direction:"rtl",background:T.card,color:T.txt,...(props.style||{})}} />;
+const Label = ({children,T})=><div style={{fontSize:12,fontWeight:600,color:T.txtS,marginBottom:4}}>{children}</div>;
+const TopBar = ({title,sub,onLogout,isDark,toggleDark,T})=>(
+  <div style={{background:`linear-gradient(135deg, ${T.pri}, ${T.priD||T.pri})`,color:"#fff",padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10}}>
+    <div style={{display:"flex",alignItems:"center",gap:10}}>
+      <img src={LOGO} alt="" style={{width:36,height:36,borderRadius:"50%",border:"2px solid rgba(255,255,255,0.3)",objectFit:"cover"}} />
+      <div><div style={{fontWeight:700,fontSize:14}}>{title}</div><div style={{fontSize:11,opacity:0.8}}>{sub}</div></div>
+    </div>
+    <div style={{display:"flex",gap:8}}>
+      <button onClick={toggleDark} style={{background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",borderRadius:"50%",width:32,height:32,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{isDark?<I.Sun s={16}/>:<I.Moon s={16}/>}</button>
+      <button onClick={onLogout} style={{background:"none",border:"none",color:"#fff",cursor:"pointer"}}><I.Out s={20}/></button>
+    </div>
+  </div>
+);
+const TabBar = ({tabs,tab,setTab,T})=>(
+  <div style={{display:"flex",justifyContent:"space-around",alignItems:"center",background:T.card,padding:"6px 0 8px",position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,boxShadow:"0 -2px 10px rgba(0,0,0,0.08)",zIndex:10,borderTop:`1px solid ${T.brd}`}}>
+    {tabs.map(t=>(
+      <button key={t.key} onClick={()=>setTab(t.key)} style={{background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:1,cursor:"pointer",color:tab===t.key?T.pri:T.txtS,padding:"3px 4px",minWidth:40}}>
+        <t.icon s={18}/><span style={{fontSize:9,fontWeight:tab===t.key?700:400}}>{t.label}</span>
+        {tab===t.key&&<div style={{width:4,height:4,borderRadius:2,background:T.pri}}/>}
+      </button>
+    ))}
+  </div>
+);
+const PhotoModal = ({src,onClose})=>{
+  if(!src) return null;
+  return <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
+    <img src={src} alt="" style={{maxWidth:"95%",maxHeight:"85vh",borderRadius:10,objectFit:"contain"}} />
+    <button onClick={onClose} style={{position:"absolute",top:16,left:16,background:"rgba(255,255,255,0.2)",border:"none",color:"#fff",borderRadius:"50%",width:36,height:36,fontSize:20,cursor:"pointer"}}>✕</button>
+  </div>;
+};
+const BalCard = ({val,T,label="الرصيد المالي"})=>(
+  <div style={{background:val>=0?`linear-gradient(135deg, ${T.ok}, #059669)`:`linear-gradient(135deg, ${T.neg}, #DC2626)`,borderRadius:16,padding:"18px 16px",color:"#fff",marginBottom:12,position:"relative",overflow:"hidden"}}>
+    <div style={{position:"absolute",top:-20,left:-20,width:80,height:80,borderRadius:"50%",background:"rgba(255,255,255,0.1)"}}/>
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,position:"relative"}}><I.Wallet s={22}/><span style={{fontSize:14,fontWeight:600}}>{label}</span></div>
+    <div style={{fontSize:34,fontWeight:800,position:"relative"}}>{val>=0?"":"-"}{Math.abs(val)} <span style={{fontSize:16}}>₪</span></div>
+    <div style={{fontSize:11,opacity:0.85,marginTop:4,position:"relative"}}>{val>=0?"رصيد إيجابي ✓":"يوجد مبلغ مستحق"}</div>
+  </div>
+);
+
+// ══════════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════════
+function LoginScreen({onLogin,isDark,toggleDark}) {
+  const T = isDark?dark:light;
+  const [u,setU]=useState(""); const [p,setP]=useState(""); const [err,setErr]=useState("");
+  return (
+    <div style={{minHeight:"100vh",background:T.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24,direction:"rtl",fontFamily:"'Segoe UI',Tahoma,sans-serif"}}>
+      <button onClick={toggleDark} style={{position:"absolute",top:16,left:16,background:T.card,border:`1px solid ${T.brd}`,borderRadius:"50%",width:36,height:36,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:T.txt}}>{isDark?<I.Sun s={16}/>:<I.Moon s={16}/>}</button>
+      <div style={{textAlign:"center",marginBottom:28}}>
+        <img src={LOGO} alt="" style={{width:88,height:88,borderRadius:"50%",border:`3px solid ${T.pri}`,marginBottom:10,objectFit:"cover"}} />
+        <h2 style={{color:T.pri,margin:0,fontSize:21}}>عيادة د. أسامة لبد</h2>
+        <p style={{color:T.txtS,fontSize:13,margin:"4px 0 0"}}>التغذية العلاجية والنمو</p>
+      </div>
+      <Card T={T} style={{width:"100%",maxWidth:340}}>
+        <div style={{marginBottom:12}}><Label T={T}>اسم المستخدم</Label><Input T={T} value={u} onChange={e=>{setU(e.target.value);setErr("")}} placeholder="أدخل اسم المستخدم"/></div>
+        <div style={{marginBottom:16}}><Label T={T}>كلمة المرور</Label><Input T={T} type="password" value={p} onChange={e=>{setP(e.target.value);setErr("")}} placeholder="أدخل كلمة المرور"/></div>
+        {err&&<p style={{color:T.err,fontSize:12,textAlign:"center",margin:"0 0 10px"}}>{err}</p>}
+        <Btn bg={T.pri} onClick={()=>onLogin(u,p,setErr)}>تسجيل الدخول</Btn>
+      </Card>
+      <p style={{color:T.txtS,fontSize:11,marginTop:18}}>admin / admin123 — ahmad01 / 1234</p>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════
+//  PATIENT APP
+// ══════════════════════════════════════
+function PatientApp({patient,patients,setPatients,onLogout,isDark,toggleDark}) {
+  const T = isDark?dark:light;
+  const [tab,setTab]=useState("home");
+  const [viewPhoto,setViewPhoto]=useState(null);
+  const pt = patients.find(p=>p.id===patient.id)||patient;
+  const upd = (u)=>setPatients(prev=>prev.map(p=>p.id===pt.id?{...p,...u}:p));
+
+  const tabs=[
+    {key:"home",label:"الرئيسية",icon:I.Home},
+    {key:"file",label:"ملفي",icon:I.File},
+    {key:"meds",label:"الأدوية",icon:I.Pill},
+    {key:"appts",label:"المواعيد",icon:I.Cal},
+    {key:"pay",label:"الدفع",icon:I.Pay},
+    {key:"prog",label:"البرنامج",icon:I.Clip},
+    {key:"msg",label:"الرسائل",icon:I.Msg},
+    {key:"growth",label:"النمو",icon:I.Chart},
+    {key:"notif",label:"إشعارات",icon:I.Bell},
+    {key:"settings",label:"إعدادات",icon:I.Lock},
+  ];
+
+  return (
+    <div style={{minHeight:"100vh",background:T.bg,fontFamily:"'Segoe UI',Tahoma,sans-serif",direction:"rtl",maxWidth:430,margin:"0 auto",position:"relative",paddingBottom:70}}>
+      <TopBar title="عيادة د. أسامة لبد" sub={`أهلاً ${pt.name}`} onLogout={onLogout} isDark={isDark} toggleDark={toggleDark} T={T} />
+      <div style={{padding:"12px 14px"}}>
+        {tab==="home"&&<PtHome pt={pt} T={T}/>}
+        {tab==="file"&&<PtFile pt={pt} upd={upd} setViewPhoto={setViewPhoto} T={T}/>}
+        {tab==="meds"&&<PtMeds pt={pt} T={T}/>}
+        {tab==="appts"&&<PtAppts pt={pt} T={T}/>}
+        {tab==="pay"&&<PtPay pt={pt} upd={upd} setViewPhoto={setViewPhoto} T={T}/>}
+        {tab==="prog"&&<PtProg pt={pt} T={T}/>}
+        {tab==="msg"&&<PtMsg pt={pt} upd={upd} T={T}/>}
+        {tab==="growth"&&<PtGrowth pt={pt} T={T}/>}
+        {tab==="notif"&&<PtNotif pt={pt} upd={upd} T={T}/>}
+        {tab==="settings"&&<PtSettings pt={pt} upd={upd} T={T}/>}
+      </div>
+      <TabBar tabs={tabs} tab={tab} setTab={setTab} T={T}/>
+      <PhotoModal src={viewPhoto} onClose={()=>setViewPhoto(null)}/>
+    </div>
+  );
+}
+
+// ─── PT: HOME ───
+function PtHome({pt,T}) {
+  const next = pt.appointments.find(a=>a.status==="upcoming");
+  const unread = (pt.notifications||[]).filter(n=>!n.read).length;
+  return <>
+    <BalCard val={pt.balance} T={T}/>
+    <Card T={T}><div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,textAlign:"center"}}>
+      {[[pt.weight,"الوزن (كغ)"],[pt.height,"الطول (سم)"],[pt.age,"العمر"]].map(([v,l],i)=>(
+        <div key={i} style={{background:T.priL,borderRadius:12,padding:"14px 8px"}}>
+          <div style={{fontSize:22,fontWeight:800,color:T.pri}}>{v}</div>
+          <div style={{fontSize:11,color:T.txtS}}>{l}</div>
+        </div>
+      ))}
+    </div></Card>
+    {unread>0&&<Card T={T} style={{background:T.wrnL,borderRight:`4px solid ${T.wrn}`}}>
+      <div style={{display:"flex",alignItems:"center",gap:8}}><I.Bell s={18}/><span style={{fontSize:13,fontWeight:600,color:T.wrn}}>{unread} إشعارات جديدة</span></div>
+    </Card>}
+    {next&&<Card T={T}>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><I.Cal s={18}/><span style={{fontWeight:700,fontSize:14,color:T.txt}}>الموعد القادم</span></div>
+      <div style={{background:T.wrnL,borderRadius:10,padding:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div><div style={{fontWeight:600,fontSize:14,color:T.txt}}>{next.date}</div><div style={{fontSize:12,color:T.txtS}}>{next.note}</div></div>
+        <Badge text={`${next.time}`} color="wrn" T={T}/>
+      </div>
+    </Card>}
+    <Card T={T}><div style={{fontSize:13,color:T.txtS,marginBottom:4}}>التشخيص</div><div style={{fontSize:15,fontWeight:600,color:T.txt}}>{pt.diagnosis}</div></Card>
+  </>;
+}
+
+// ─── PT: FILE ───
+function PtFile({pt,upd,setViewPhoto,T}) {
+  const ref=useRef(null);
+  const handleUp = e=>{
+    Array.from(e.target.files).forEach(file=>{
+      const r=new FileReader();
+      r.onload=ev=>upd({labPhotos:[...(pt.labPhotos||[]),{id:Date.now()+Math.random(),src:ev.target.result,date:new Date().toLocaleDateString("ar-EG"),name:file.name}]});
+      r.readAsDataURL(file);
+    }); e.target.value="";
+  };
+  return <>
+    <Card T={T}>
+      <h3 style={{margin:"0 0 12px",fontSize:16,color:T.pri}}>البيانات الشخصية</h3>
+      {[["الاسم",pt.name],["العمر",`${pt.age} سنوات`],["الوزن",`${pt.weight} كغ`],["الطول",`${pt.height} سم`],["الهاتف",pt.phone],["التشخيص",pt.diagnosis]].map(([k,v])=>(
+        <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${T.brd}`}}>
+          <span style={{color:T.txtS,fontSize:13}}>{k}</span><span style={{fontWeight:600,fontSize:13,color:T.txt}}>{v}</span>
+        </div>
+      ))}
+      {pt.notes&&<div style={{marginTop:10,padding:10,background:T.priL,borderRadius:8,fontSize:13,color:T.pri}}>📝 {pt.notes}</div>}
+    </Card>
+    <Card T={T}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+        <h3 style={{margin:0,fontSize:16,color:T.pri,display:"flex",alignItems:"center",gap:6}}><I.Cam s={18}/> صور التحاليل</h3>
+        <BtnSm bg={T.pri} onClick={()=>ref.current?.click()}><I.Up s={14}/> رفع صورة</BtnSm>
+      </div>
+      <input ref={ref} type="file" accept="image/*" multiple onChange={handleUp} style={{display:"none"}}/>
+      {(!pt.labPhotos||pt.labPhotos.length===0)?
+        <div style={{textAlign:"center",padding:"20px 0",color:T.txtS}}><I.Img s={40}/><p style={{margin:"8px 0 0",fontSize:13}}>لا توجد صور تحاليل</p></div>
+      : <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+          {pt.labPhotos.map(ph=><div key={ph.id}><img src={ph.src} alt="" style={{width:"100%",aspectRatio:"1",objectFit:"cover",borderRadius:10,border:`2px solid ${T.brd}`,cursor:"pointer"}} onClick={()=>setViewPhoto(ph.src)}/><div style={{fontSize:9,color:T.txtS,textAlign:"center"}}>{ph.date}</div></div>)}
+        </div>
+      }
+    </Card>
+  </>;
+}
+
+// ─── PT: MEDS ───
+function PtMeds({pt,T}) {
+  return <Card T={T}><h3 style={{margin:"0 0 14px",fontSize:16,color:T.pri}}>الأدوية والمكملات</h3>
+    {pt.meds.length===0?<p style={{color:T.txtS,textAlign:"center",padding:20,fontSize:13}}>لا توجد أدوية</p>
+    :pt.meds.map((m,i)=><div key={m.id||i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:i<pt.meds.length-1?`1px solid ${T.brd}`:"none"}}>
+      <div style={{width:40,height:40,borderRadius:10,background:T.priL,display:"flex",alignItems:"center",justifyContent:"center",color:T.pri}}><I.Pill s={20}/></div>
+      <div><div style={{fontWeight:700,fontSize:14,color:T.txt}}>{m.name}</div><div style={{fontSize:12,color:T.txtS}}>{m.dose} — {m.time}</div></div>
+    </div>)}
+  </Card>;
+}
+
+// ─── PT: APPOINTMENTS ───
+function PtAppts({pt,T}) {
+  return <Card T={T}><h3 style={{margin:"0 0 14px",fontSize:16,color:T.pri}}>المواعيد</h3>
+    {pt.appointments.length===0?<p style={{color:T.txtS,textAlign:"center",padding:20,fontSize:13}}>لا توجد مواعيد</p>
+    :pt.appointments.map((a,i)=><div key={a.id||i} style={{padding:"12px 0",borderBottom:i<pt.appointments.length-1?`1px solid ${T.brd}`:"none"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div><div style={{fontWeight:700,fontSize:14,color:T.txt}}>{a.date}</div><div style={{fontSize:12,color:T.txtS}}>الساعة {a.time} — {a.note}</div></div>
+        <Badge text={a.status==="upcoming"?"قادم":"تم"} color={a.status==="upcoming"?"wrn":"ok"} T={T}/>
+      </div>
+    </div>)}
+  </Card>;
+}
+
+// ─── PT: PAYMENT ───
+function PtPay({pt,upd,setViewPhoto,T}) {
+  const [show,setShow]=useState(false);
+  const [amt,setAmt]=useState(""); const [mth,setMth]=useState(PAY_METHODS[0].name);
+  const ref=useRef(null); const [img,setImg]=useState(null);
+  const handleImg = e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>setImg(ev.target.result);r.readAsDataURL(f);e.target.value=""};
+  const submit = ()=>{
+    const a=parseFloat(amt);if(!a||a<=0||!img)return;
+    upd({
+      balance:pt.balance+a,
+      payments:[...pt.payments,{id:Date.now(),date:new Date().toISOString().split("T")[0],amount:a,method:mth,status:"pending"}],
+      paymentReceipts:[...(pt.paymentReceipts||[]),{id:Date.now(),amount:a,method:mth,date:new Date().toLocaleDateString("ar-EG"),img,status:"pending"}],
+      notifications:[...(pt.notifications||[]),{id:Date.now(),text:`تم رفع إشعار دفع بمبلغ ${a} ₪`,date:new Date().toLocaleDateString("ar-EG"),read:false}],
+    });
+    setAmt("");setImg(null);setShow(false);
+  };
+  return <>
+    <BalCard val={pt.balance} T={T} label="رصيدك الحالي"/>
+    <Card T={T}>
+      <h3 style={{margin:"0 0 12px",fontSize:15,color:T.pri}}>طرق الدفع</h3>
+      {PAY_METHODS.map((pm,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:i<PAY_METHODS.length-1?`1px solid ${T.brd}`:"none"}}>
+        <span style={{fontWeight:600,fontSize:13,color:T.txt}}>{pm.name}</span>
+        <span style={{fontSize:14,fontFamily:"monospace",color:T.pri,fontWeight:700,direction:"ltr"}}>{pm.num}</span>
+      </div>)}
+    </Card>
+    {!show?<Btn bg={T.acc} onClick={()=>setShow(true)} style={{marginBottom:12}}><I.Up s={18}/> رفع إشعار دفع</Btn>
+    :<Card T={T}>
+      <h3 style={{margin:"0 0 12px",fontSize:15,color:T.acc}}>رفع إشعار الدفع</h3>
+      <div style={{marginBottom:10}}><Label T={T}>المبلغ المدفوع (₪)</Label><Input T={T} type="number" value={amt} onChange={e=>setAmt(e.target.value)} placeholder="أدخل المبلغ"/></div>
+      <div style={{marginBottom:10}}><Label T={T}>طريقة الدفع</Label>
+        <select style={{width:"100%",padding:"10px 14px",borderRadius:10,border:`1px solid ${T.brd}`,fontSize:14,background:T.card,color:T.txt}} value={mth} onChange={e=>setMth(e.target.value)}>
+          {PAY_METHODS.map(pm=><option key={pm.name} value={pm.name}>{pm.name}</option>)}
+        </select>
+      </div>
+      <div style={{marginBottom:12}}><Label T={T}>صورة الإشعار</Label>
+        {img?<div style={{position:"relative"}}><img src={img} alt="" style={{width:"100%",maxHeight:200,objectFit:"contain",borderRadius:10,border:`2px solid ${T.ok}`}}/>
+          <button onClick={()=>setImg(null)} style={{position:"absolute",top:4,left:4,background:T.err,color:"#fff",border:"none",borderRadius:"50%",width:24,height:24,cursor:"pointer",fontSize:14}}>✕</button></div>
+        :<Btn bg={T.priL} color={T.pri} onClick={()=>ref.current?.click()} style={{border:`2px dashed ${T.pri}`}}><I.Cam s={20}/> التقط صورة أو اختر من المعرض</Btn>}
+        <input ref={ref} type="file" accept="image/*" onChange={handleImg} style={{display:"none"}}/>
+      </div>
+      <div style={{display:"flex",gap:8}}>
+        <Btn bg={(!amt||!img)?T.brd:T.ok} color={(!amt||!img)?T.txtS:"#fff"} disabled={!amt||!img} onClick={submit} style={{flex:1}}><I.Check s={18}/> إرسال</Btn>
+        <Btn bg={T.errL} color={T.err} onClick={()=>{setShow(false);setImg(null);setAmt("")}} style={{flex:0.5}} full={false}>إلغاء</Btn>
+      </div>
+    </Card>}
+    <Card T={T}><h3 style={{margin:"0 0 12px",fontSize:15,color:T.pri}}>سجل المدفوعات</h3>
+      {pt.payments.length===0?<p style={{color:T.txtS,textAlign:"center",padding:16,fontSize:13}}>لا توجد مدفوعات</p>
+      :pt.payments.map((p2,i)=><div key={p2.id||i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:i<pt.payments.length-1?`1px solid ${T.brd}`:"none"}}>
+        <div><div style={{fontWeight:600,fontSize:13,color:T.txt}}>{p2.method}</div><div style={{fontSize:11,color:T.txtS}}>{p2.date}</div></div>
+        <div style={{textAlign:"left"}}><div style={{fontWeight:700,fontSize:14,color:T.ok}}>+{p2.amount} ₪</div>
+          <Badge text={p2.status==="confirmed"?"مؤكد":"قيد المراجعة"} color={p2.status==="confirmed"?"ok":"wrn"} T={T}/>
+        </div>
+      </div>)}
+    </Card>
+    {pt.paymentReceipts&&pt.paymentReceipts.length>0&&<Card T={T}>
+      <h3 style={{margin:"0 0 12px",fontSize:15,color:T.pri}}>إشعارات الدفع المرفوعة</h3>
+      {pt.paymentReceipts.map(r=><div key={r.id} style={{display:"flex",gap:10,alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${T.brd}`}}>
+        <img src={r.img} alt="" style={{width:50,height:50,objectFit:"cover",borderRadius:8,cursor:"pointer"}} onClick={()=>setViewPhoto(r.img)}/>
+        <div style={{flex:1}}><div style={{fontWeight:600,fontSize:13,color:T.txt}}>{r.amount} ₪ — {r.method}</div><div style={{fontSize:11,color:T.txtS}}>{r.date}</div></div>
+        <Badge text={r.status==="confirmed"?"مؤكد":"بانتظار"} color={r.status==="confirmed"?"ok":"wrn"} T={T}/>
+      </div>)}
+    </Card>}
+  </>;
+}
+
+// ─── PT: PROGRAM ───
+function PtProg({pt,T}) {
+  if(!pt.program) return <Card T={T}><p style={{color:T.txtS,textAlign:"center"}}>لا يوجد برنامج</p></Card>;
+  const pct=Math.round(((pt.program.current+1)/pt.program.steps.length)*100);
+  return <Card T={T}>
+    <h3 style={{margin:"0 0 4px",fontSize:16,color:T.pri}}>{pt.program.name}</h3>
+    <div style={{background:T.brd,borderRadius:20,height:8,marginBottom:14,marginTop:8,overflow:"hidden"}}><div style={{background:T.pri,height:"100%",borderRadius:20,width:`${pct}%`,transition:"width 0.5s"}}/></div>
+    <div style={{fontSize:12,color:T.txtS,marginBottom:14,textAlign:"center"}}>{pct}% مكتمل</div>
+    {pt.program.steps.map((step,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:i<pt.program.steps.length-1?`1px solid ${T.brd}`:"none"}}>
+      <div style={{width:28,height:28,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,background:i<=pt.program.current?T.pri:T.brd,color:i<=pt.program.current?"#fff":T.txtS}}>{i<=pt.program.current?"✓":i+1}</div>
+      <span style={{fontWeight:i===pt.program.current?700:400,color:i<=pt.program.current?T.txt:T.txtS,fontSize:14}}>{step}</span>
+    </div>)}
+  </Card>;
+}
+
+// ─── PT: MESSAGES ───
+function PtMsg({pt,upd,T}) {
+  const [txt,setTxt]=useState("");
+  const send = ()=>{if(!txt.trim())return;upd({messages:[...(pt.messages||[]),{id:Date.now(),from:"patient",text:txt,date:new Date().toLocaleDateString("ar-EG"),time:new Date().toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit"})}]});setTxt("")};
+  return <Card T={T}>
+    <h3 style={{margin:"0 0 12px",fontSize:16,color:T.pri}}>الرسائل</h3>
+    <div style={{maxHeight:350,overflowY:"auto",marginBottom:12}}>
+      {(!pt.messages||pt.messages.length===0)?<p style={{color:T.txtS,textAlign:"center",padding:20,fontSize:13}}>لا توجد رسائل</p>
+      :pt.messages.map(m=><div key={m.id} style={{display:"flex",justifyContent:m.from==="patient"?"flex-start":"flex-end",marginBottom:8}}>
+        <div style={{maxWidth:"80%",padding:"10px 14px",borderRadius:12,background:m.from==="patient"?T.priL:T.bg,color:T.txt}}>
+          <div style={{fontSize:13}}>{m.text}</div>
+          <div style={{fontSize:10,color:T.txtS,marginTop:4}}>{m.date} {m.time}</div>
+        </div>
+      </div>)}
+    </div>
+    <div style={{display:"flex",gap:8}}>
+      <Input T={T} value={txt} onChange={e=>setTxt(e.target.value)} placeholder="اكتب رسالة..." onKeyDown={e=>e.key==="Enter"&&send()} style={{flex:1}}/>
+      <button onClick={send} style={{background:T.pri,border:"none",borderRadius:10,width:44,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff"}}><I.Send s={18}/></button>
+    </div>
+  </Card>;
+}
+
+// ─── PT: GROWTH ───
+function PtGrowth({pt,T}) {
+  const data = pt.growthData||[];
+  return <Card T={T}>
+    <h3 style={{margin:"0 0 16px",fontSize:16,color:T.pri}}>منحنى النمو</h3>
+    {data.length<2?<p style={{color:T.txtS,textAlign:"center",fontSize:13}}>لا توجد بيانات كافية</p>:<>
+      <div style={{marginBottom:16}}>
+        <div style={{fontSize:13,fontWeight:600,color:T.txt,marginBottom:8}}>الوزن (كغ)</div>
+        <ResponsiveContainer width="100%" height={180}>
+          <LineChart data={data}><CartesianGrid strokeDasharray="3 3" stroke={T.brd}/><XAxis dataKey="month" tick={{fontSize:10,fill:T.txtS}}/><YAxis tick={{fontSize:10,fill:T.txtS}}/><Tooltip/><Line type="monotone" dataKey="weight" stroke={T.pri} strokeWidth={2} dot={{r:4,fill:T.pri}}/></LineChart>
+        </ResponsiveContainer>
+      </div>
+      <div>
+        <div style={{fontSize:13,fontWeight:600,color:T.txt,marginBottom:8}}>الطول (سم)</div>
+        <ResponsiveContainer width="100%" height={180}>
+          <LineChart data={data}><CartesianGrid strokeDasharray="3 3" stroke={T.brd}/><XAxis dataKey="month" tick={{fontSize:10,fill:T.txtS}}/><YAxis tick={{fontSize:10,fill:T.txtS}}/><Tooltip/><Line type="monotone" dataKey="height" stroke={T.acc} strokeWidth={2} dot={{r:4,fill:T.acc}}/></LineChart>
+        </ResponsiveContainer>
+      </div>
+    </>}
+  </Card>;
+}
+
+// ─── PT: NOTIFICATIONS ───
+function PtNotif({pt,upd,T}) {
+  const notifs = pt.notifications||[];
+  const markRead = ()=>upd({notifications:notifs.map(n=>({...n,read:true}))});
+  return <Card T={T}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+      <h3 style={{margin:0,fontSize:16,color:T.pri}}>الإشعارات</h3>
+      {notifs.some(n=>!n.read)&&<BtnSm bg={T.priL} color={T.pri} onClick={markRead}>قراءة الكل</BtnSm>}
+    </div>
+    {notifs.length===0?<p style={{color:T.txtS,textAlign:"center",padding:20,fontSize:13}}>لا توجد إشعارات</p>
+    :notifs.map(n=><div key={n.id} style={{padding:"10px 0",borderBottom:`1px solid ${T.brd}`,display:"flex",gap:10,alignItems:"center",opacity:n.read?0.6:1}}>
+      <div style={{width:8,height:8,borderRadius:"50%",background:n.read?"transparent":T.pri,flexShrink:0}}/>
+      <div><div style={{fontSize:13,fontWeight:n.read?400:600,color:T.txt}}>{n.text}</div><div style={{fontSize:11,color:T.txtS}}>{n.date}</div></div>
+    </div>)}
+  </Card>;
+}
+
+// ─── PT: SETTINGS (password change) ───
+function PtSettings({pt,upd,T}) {
+  const [oldP,setOldP]=useState(""); const [newP,setNewP]=useState(""); const [msg,setMsg]=useState("");
+  const change = ()=>{
+    if(oldP!==pt.pass){setMsg("كلمة المرور القديمة غير صحيحة");return}
+    if(newP.length<4){setMsg("كلمة المرور الجديدة قصيرة جداً");return}
+    upd({pass:newP});setOldP("");setNewP("");setMsg("تم تغيير كلمة المرور بنجاح ✓");
+  };
+  return <Card T={T}>
+    <h3 style={{margin:"0 0 14px",fontSize:16,color:T.pri}}>تغيير كلمة المرور</h3>
+    <div style={{marginBottom:10}}><Label T={T}>كلمة المرور الحالية</Label><Input T={T} type="password" value={oldP} onChange={e=>{setOldP(e.target.value);setMsg("")}}/></div>
+    <div style={{marginBottom:14}}><Label T={T}>كلمة المرور الجديدة</Label><Input T={T} type="password" value={newP} onChange={e=>{setNewP(e.target.value);setMsg("")}}/></div>
+    {msg&&<p style={{fontSize:12,color:msg.includes("✓")?T.ok:T.err,textAlign:"center",margin:"0 0 10px"}}>{msg}</p>}
+    <Btn bg={T.pri} onClick={change}><I.Lock s={18}/> تغيير</Btn>
+  </Card>;
+}
+
+// ══════════════════════════════════════
+//  ADMIN APP
+// ══════════════════════════════════════
+function AdminApp({patients,setPatients,onLogout,isDark,toggleDark}) {
+  const T = isDark?dark:light;
+  const [tab,setTab]=useState("home");
+  const [selPt,setSelPt]=useState(null);
+  const [viewPhoto,setViewPhoto]=useState(null);
+  const updPt = (id,fn)=>setPatients(prev=>prev.map(p=>p.id===id?fn(p):p));
+
+  const tabs=[
+    {key:"home",label:"الرئيسية",icon:I.Home},
+    {key:"patients",label:"المرضى",icon:I.Users},
+    {key:"receipts",label:"الإشعارات",icon:I.Bell},
+    {key:"photos",label:"الصور",icon:I.Img},
+    {key:"reports",label:"التقارير",icon:I.Report},
+  ];
+
+  return (
+    <div style={{minHeight:"100vh",background:T.bg,fontFamily:"'Segoe UI',Tahoma,sans-serif",direction:"rtl",maxWidth:430,margin:"0 auto",position:"relative",paddingBottom:70}}>
+      <TopBar title="لوحة التحكم" sub="د. أسامة لبد" onLogout={onLogout} isDark={isDark} toggleDark={toggleDark} T={T}/>
+      <div style={{padding:"12px 14px"}}>
+        {tab==="home"&&<AdHome patients={patients} T={T}/>}
+        {tab==="patients"&&!selPt&&<AdList patients={patients} setPatients={setPatients} onSelect={setSelPt} T={T}/>}
+        {tab==="patients"&&selPt&&<AdDetail pt={patients.find(p=>p.id===selPt)||patients[0]} updPt={updPt} onBack={()=>setSelPt(null)} setViewPhoto={setViewPhoto} setPatients={setPatients} T={T}/>}
+        {tab==="receipts"&&<AdReceipts patients={patients} setPatients={setPatients} setViewPhoto={setViewPhoto} T={T}/>}
+        {tab==="photos"&&<AdPhotos patients={patients} setViewPhoto={setViewPhoto} T={T}/>}
+        {tab==="reports"&&<AdReports patients={patients} T={T}/>}
+      </div>
+      <TabBar tabs={tabs} tab={tab} setTab={t=>{setTab(t);setSelPt(null)}} T={T}/>
+      <PhotoModal src={viewPhoto} onClose={()=>setViewPhoto(null)}/>
+    </div>
+  );
+}
+
+// ─── ADMIN: HOME ───
+function AdHome({patients,T}) {
+  const totalBal = patients.reduce((s,p)=>s+p.balance,0);
+  const negCount = patients.filter(p=>p.balance<0).length;
+  const pendReceipts = patients.reduce((s,p)=>s+(p.paymentReceipts||[]).filter(r=>r.status==="pending").length,0);
+  const totalPhotos = patients.reduce((s,p)=>s+(p.labPhotos||[]).length,0);
+  const pendMsgs = patients.reduce((s,p)=>s+(p.messages||[]).filter(m=>m.from==="patient").length,0);
+  return <>
+    <Card T={T}><h3 style={{margin:"0 0 14px",fontSize:16,color:T.pri}}>إحصائيات العيادة</h3>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        {[["عدد المرضى",patients.length,T.priL,T.pri],["إجمالي الأرصدة",`${totalBal} ₪`,totalBal>=0?T.okL:T.errL,totalBal>=0?T.ok:T.err],["مرضى بديون",negCount,T.errL,T.err],["إشعارات دفع جديدة",pendReceipts,T.wrnL,T.wrn],["صور تحاليل",totalPhotos,T.priL,T.pri],["رسائل مرضى",pendMsgs,T.wrnL,T.wrn]]
+        .map(([l,v,bg,c],i)=><div key={i} style={{background:bg,borderRadius:12,padding:14,textAlign:"center"}}>
+          <div style={{fontSize:22,fontWeight:800,color:c}}>{v}</div><div style={{fontSize:11,color:T.txtS,marginTop:2}}>{l}</div>
+        </div>)}
+      </div>
+    </Card>
+  </>;
+}
+
+// ─── ADMIN: PATIENTS LIST ───
+function AdList({patients,setPatients,onSelect,T}) {
+  const [show,setShow]=useState(false);
+  const [f,setF]=useState({name:"",user:"",pass:"",age:"",phone:"",weight:"",height:"",diagnosis:""});
+  const add = ()=>{
+    if(!f.name||!f.user||!f.pass)return;
+    setPatients(prev=>[...prev,{id:Date.now(),...f,age:+f.age||0,weight:+f.weight||0,height:+f.height||0,balance:0,meds:[],appointments:[],payments:[],program:null,labPhotos:[],paymentReceipts:[],notes:"",growthData:[],messages:[],notifications:[]}]);
+    setF({name:"",user:"",pass:"",age:"",phone:"",weight:"",height:"",diagnosis:""});setShow(false);
+  };
+  return <>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+      <h3 style={{margin:0,fontSize:17,color:T.txt}}>المرضى ({patients.length})</h3>
+      <BtnSm bg={show?T.err:T.pri} onClick={()=>setShow(!show)}>{show?<><I.X s={14}/> إلغاء</>:<><I.Plus s={14}/> إضافة</>}</BtnSm>
+    </div>
+    {show&&<Card T={T}>
+      <h4 style={{margin:"0 0 12px",color:T.pri}}>مريض جديد</h4>
+      {[["name","الاسم"],["user","اسم المستخدم"],["pass","كلمة المرور"],["age","العمر"],["phone","الهاتف"],["weight","الوزن"],["height","الطول"],["diagnosis","التشخيص"]].map(([k,l])=>(
+        <div key={k} style={{marginBottom:8}}><Label T={T}>{l}</Label><Input T={T} value={f[k]} onChange={e=>setF({...f,[k]:e.target.value})} type={["age","weight","height"].includes(k)?"number":"text"}/></div>
+      ))}
+      <Btn bg={T.ok} onClick={add}><I.Check s={18}/> حفظ</Btn>
+    </Card>}
+    {patients.map(pt=><Card key={pt.id} T={T} style={{cursor:"pointer"}}><div onClick={()=>onSelect(pt.id)} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <div><div style={{fontWeight:700,fontSize:14,color:T.txt}}>{pt.name}</div><div style={{fontSize:12,color:T.txtS}}>{pt.diagnosis} — {pt.age} سنوات</div></div>
+      <div style={{textAlign:"left"}}><div style={{fontWeight:700,fontSize:14,color:pt.balance>=0?T.ok:T.err}}>{pt.balance} ₪</div><div style={{fontSize:10,color:T.txtS}}>@{pt.user}</div></div>
+    </div></Card>)}
+  </>;
+}
+
+// ─── ADMIN: PATIENT DETAIL ───
+function AdDetail({pt,updPt,onBack,setViewPhoto,setPatients,T}) {
+  const [balAdj,setBalAdj]=useState("");
+  const [showMed,setShowMed]=useState(false);
+  const [showAppt,setShowAppt]=useState(false);
+  const [newMed,setNewMed]=useState({name:"",dose:"",time:""});
+  const [newAppt,setNewAppt]=useState({date:"",time:"",note:""});
+  const [noteEdit,setNoteEdit]=useState(false);
+  const [noteVal,setNoteVal]=useState(pt.notes||"");
+  const [msgTxt,setMsgTxt]=useState("");
+
+  const adjustBal = ()=>{const a=parseFloat(balAdj);if(isNaN(a))return;updPt(pt.id,p=>({...p,balance:p.balance+a}));setBalAdj("")};
+  const addMed = ()=>{if(!newMed.name)return;updPt(pt.id,p=>({...p,meds:[...p.meds,{id:Date.now(),...newMed}]}));setNewMed({name:"",dose:"",time:""});setShowMed(false)};
+  const delMed = id=>updPt(pt.id,p=>({...p,meds:p.meds.filter(m=>m.id!==id)}));
+  const addAppt = ()=>{if(!newAppt.date)return;updPt(pt.id,p=>({...p,appointments:[...p.appointments,{id:Date.now(),...newAppt,status:"upcoming"}]}));setNewAppt({date:"",time:"",note:""});setShowAppt(false)};
+  const saveNote = ()=>{updPt(pt.id,p=>({...p,notes:noteVal}));setNoteEdit(false)};
+  const sendMsg = ()=>{if(!msgTxt.trim())return;updPt(pt.id,p=>({...p,messages:[...(p.messages||[]),{id:Date.now(),from:"clinic",text:msgTxt,date:new Date().toLocaleDateString("ar-EG"),time:new Date().toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit"})}]}));setMsgTxt("")};
+  const delPt = ()=>{if(confirm("حذف المريض؟")){setPatients(prev=>prev.filter(p=>p.id!==pt.id));onBack()}};
+  const confirmReceipt = rid=>updPt(pt.id,p=>({...p,paymentReceipts:(p.paymentReceipts||[]).map(r=>r.id===rid?{...r,status:"confirmed"}:r)}));
+
+  return <>
+    <button onClick={onBack} style={{background:"none",border:"none",color:T.pri,cursor:"pointer",fontSize:13,fontWeight:600,marginBottom:10,padding:0}}>→ رجوع</button>
+    {/* Info */}
+    <Card T={T}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <h3 style={{margin:0,fontSize:17,color:T.pri}}>{pt.name}</h3>
+        <BtnSm bg={T.errL} color={T.err} onClick={delPt}><I.Del s={14}/> حذف</BtnSm>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+        {[["المستخدم",pt.user],["العمر",pt.age],["الوزن",`${pt.weight} كغ`],["الطول",`${pt.height} سم`],["الهاتف",pt.phone],["التشخيص",pt.diagnosis]].map(([k,v])=>
+          <div key={k} style={{padding:8,background:T.bg,borderRadius:8}}><div style={{fontSize:10,color:T.txtS}}>{k}</div><div style={{fontSize:13,fontWeight:600,color:T.txt}}>{v}</div></div>
+        )}
+      </div>
+    </Card>
+    {/* Balance */}
+    <Card T={T}>
+      <h4 style={{margin:"0 0 10px",fontSize:15,color:T.pri,display:"flex",alignItems:"center",gap:6}}><I.Wallet s={18}/> التحكم بالرصيد</h4>
+      <BalCard val={pt.balance} T={T} label="الرصيد الحالي"/>
+      <div style={{display:"flex",gap:8,marginBottom:6}}>
+        <Input T={T} type="number" value={balAdj} onChange={e=>setBalAdj(e.target.value)} placeholder="المبلغ (+ أو -)" style={{flex:1}}/>
+        <BtnSm bg={T.pri} onClick={adjustBal}>تعديل</BtnSm>
+      </div>
+      <p style={{fontSize:11,color:T.txtS,margin:"4px 0 0"}}>موجب لزيادة الرصيد، سالب لإنقاصه</p>
+    </Card>
+    {/* Notes */}
+    <Card T={T}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+        <h4 style={{margin:0,fontSize:15,color:T.pri}}>ملاحظات طبية</h4>
+        <BtnSm bg={noteEdit?T.ok:T.priL} color={noteEdit?"#fff":T.pri} onClick={()=>noteEdit?saveNote():setNoteEdit(true)}>{noteEdit?"حفظ":"تعديل"}</BtnSm>
+      </div>
+      {noteEdit?<textarea value={noteVal} onChange={e=>setNoteVal(e.target.value)} style={{width:"100%",minHeight:80,padding:10,borderRadius:10,border:`1px solid ${T.brd}`,fontSize:13,resize:"vertical",background:T.bg,color:T.txt,boxSizing:"border-box"}}/>
+      :<p style={{fontSize:13,color:pt.notes?T.txt:T.txtS,margin:0}}>{pt.notes||"لا توجد ملاحظات"}</p>}
+    </Card>
+    {/* Lab Photos */}
+    {pt.labPhotos&&pt.labPhotos.length>0&&<Card T={T}>
+      <h4 style={{margin:"0 0 10px",fontSize:15,color:T.pri}}><I.Cam s={16}/> صور التحاليل ({pt.labPhotos.length})</h4>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+        {pt.labPhotos.map(ph=><div key={ph.id}><img src={ph.src} alt="" style={{width:"100%",aspectRatio:"1",objectFit:"cover",borderRadius:10,border:`2px solid ${T.brd}`,cursor:"pointer"}} onClick={()=>setViewPhoto(ph.src)}/><div style={{fontSize:9,color:T.txtS,textAlign:"center"}}>{ph.date}</div></div>)}
+      </div>
+    </Card>}
+    {/* Receipts */}
+    {pt.paymentReceipts&&pt.paymentReceipts.length>0&&<Card T={T}>
+      <h4 style={{margin:"0 0 10px",fontSize:15,color:T.acc}}><I.Bell s={16}/> إشعارات الدفع ({pt.paymentReceipts.length})</h4>
+      {pt.paymentReceipts.map(r=><div key={r.id} style={{display:"flex",gap:10,alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${T.brd}`}}>
+        <img src={r.img} alt="" style={{width:55,height:55,objectFit:"cover",borderRadius:8,cursor:"pointer"}} onClick={()=>setViewPhoto(r.img)}/>
+        <div style={{flex:1}}><div style={{fontWeight:600,fontSize:13,color:T.txt}}>{r.amount} ₪ — {r.method}</div><div style={{fontSize:11,color:T.txtS}}>{r.date}</div></div>
+        {r.status==="pending"?<BtnSm bg={T.ok} onClick={()=>confirmReceipt(r.id)}><I.Check s={14}/> تأكيد</BtnSm>:<Badge text="مؤكد ✓" color="ok" T={T}/>}
+      </div>)}
+    </Card>}
+    {/* Meds */}
+    <Card T={T}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+        <h4 style={{margin:0,fontSize:15,color:T.pri}}>الأدوية</h4>
+        <BtnSm bg={showMed?T.err:T.pri} onClick={()=>setShowMed(!showMed)}>{showMed?"إلغاء":<><I.Plus s={14}/> إضافة</>}</BtnSm>
+      </div>
+      {showMed&&<div style={{background:T.bg,borderRadius:10,padding:12,marginBottom:10}}>
+        {[["name","اسم الدواء"],["dose","الجرعة"],["time","الوقت"]].map(([k,l])=><div key={k} style={{marginBottom:8}}><Label T={T}>{l}</Label><Input T={T} value={newMed[k]} onChange={e=>setNewMed({...newMed,[k]:e.target.value})}/></div>)}
+        <Btn bg={T.ok} onClick={addMed}><I.Check s={16}/> حفظ</Btn>
+      </div>}
+      {pt.meds.map(m=><div key={m.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${T.brd}`}}>
+        <div><div style={{fontWeight:600,fontSize:13,color:T.txt}}>{m.name}</div><div style={{fontSize:11,color:T.txtS}}>{m.dose} — {m.time}</div></div>
+        <button onClick={()=>delMed(m.id)} style={{background:"none",border:"none",color:T.err,cursor:"pointer"}}><I.Del s={16}/></button>
+      </div>)}
+    </Card>
+    {/* Appointments */}
+    <Card T={T}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+        <h4 style={{margin:0,fontSize:15,color:T.pri}}>المواعيد</h4>
+        <BtnSm bg={showAppt?T.err:T.pri} onClick={()=>setShowAppt(!showAppt)}>{showAppt?"إلغاء":<><I.Plus s={14}/> إضافة</>}</BtnSm>
+      </div>
+      {showAppt&&<div style={{background:T.bg,borderRadius:10,padding:12,marginBottom:10}}>
+        {[["date","التاريخ","date"],["time","الساعة","time"],["note","ملاحظة","text"]].map(([k,l,t])=><div key={k} style={{marginBottom:8}}><Label T={T}>{l}</Label><Input T={T} type={t} value={newAppt[k]} onChange={e=>setNewAppt({...newAppt,[k]:e.target.value})}/></div>)}
+        <Btn bg={T.ok} onClick={addAppt}><I.Check s={16}/> حفظ</Btn>
+      </div>}
+      {pt.appointments.map(a=><div key={a.id} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:`1px solid ${T.brd}`}}>
+        <div><div style={{fontWeight:600,fontSize:13,color:T.txt}}>{a.date} — {a.time}</div><div style={{fontSize:11,color:T.txtS}}>{a.note}</div></div>
+        <Badge text={a.status==="upcoming"?"قادم":"تم"} color={a.status==="upcoming"?"wrn":"ok"} T={T}/>
+      </div>)}
+    </Card>
+    {/* Messaging */}
+    <Card T={T}>
+      <h4 style={{margin:"0 0 10px",fontSize:15,color:T.pri}}>إرسال رسالة للمريض</h4>
+      <div style={{maxHeight:200,overflowY:"auto",marginBottom:8}}>
+        {(pt.messages||[]).map(m=><div key={m.id} style={{display:"flex",justifyContent:m.from==="clinic"?"flex-start":"flex-end",marginBottom:6}}>
+          <div style={{maxWidth:"80%",padding:"8px 12px",borderRadius:10,background:m.from==="clinic"?T.priL:T.bg,fontSize:12,color:T.txt}}>
+            <div>{m.text}</div><div style={{fontSize:9,color:T.txtS,marginTop:2}}>{m.from==="clinic"?"العيادة":"المريض"} — {m.time}</div>
+          </div>
+        </div>)}
+      </div>
+      <div style={{display:"flex",gap:8}}>
+        <Input T={T} value={msgTxt} onChange={e=>setMsgTxt(e.target.value)} placeholder="اكتب رسالة..." onKeyDown={e=>e.key==="Enter"&&sendMsg()} style={{flex:1}}/>
+        <button onClick={sendMsg} style={{background:T.pri,border:"none",borderRadius:10,width:40,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff"}}><I.Send s={16}/></button>
+      </div>
+    </Card>
+    {/* Growth */}
+    {pt.growthData&&pt.growthData.length>0&&<Card T={T}>
+      <h4 style={{margin:"0 0 10px",fontSize:15,color:T.pri}}>منحنى النمو</h4>
+      <ResponsiveContainer width="100%" height={160}>
+        <LineChart data={pt.growthData}><CartesianGrid strokeDasharray="3 3" stroke={T.brd}/><XAxis dataKey="month" tick={{fontSize:9,fill:T.txtS}}/><YAxis tick={{fontSize:9,fill:T.txtS}}/><Tooltip/><Line type="monotone" dataKey="weight" stroke={T.pri} strokeWidth={2} dot={{r:3}}/><Line type="monotone" dataKey="height" stroke={T.acc} strokeWidth={2} dot={{r:3}}/></LineChart>
+      </ResponsiveContainer>
+    </Card>}
+  </>;
+}
+
+// ─── ADMIN: RECEIPTS ───
+function AdReceipts({patients,setPatients,setViewPhoto,T}) {
+  const all = patients.flatMap(pt=>(pt.paymentReceipts||[]).map(r=>({...r,ptName:pt.name,ptId:pt.id})));
+  const pending=all.filter(r=>r.status==="pending"), confirmed=all.filter(r=>r.status==="confirmed");
+  const confirm = (ptId,rId)=>setPatients(prev=>prev.map(p=>p.id===ptId?{...p,paymentReceipts:(p.paymentReceipts||[]).map(r=>r.id===rId?{...r,status:"confirmed"}:r)}:p));
+  return <>
+    <h3 style={{margin:"0 0 14px",fontSize:17,color:T.txt}}>إشعارات الدفع</h3>
+    {pending.length>0&&<Card T={T} style={{borderRight:`4px solid ${T.wrn}`}}>
+      <h4 style={{margin:"0 0 10px",fontSize:14,color:T.wrn}}>بانتظار التأكيد ({pending.length})</h4>
+      {pending.map(r=><div key={r.id} style={{display:"flex",gap:10,alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${T.brd}`}}>
+        <img src={r.img} alt="" style={{width:55,height:55,objectFit:"cover",borderRadius:8,cursor:"pointer"}} onClick={()=>setViewPhoto(r.img)}/>
+        <div style={{flex:1}}><div style={{fontWeight:700,fontSize:13,color:T.txt}}>{r.ptName}</div><div style={{fontSize:12,color:T.txtS}}>{r.amount} ₪ — {r.method} — {r.date}</div></div>
+        <BtnSm bg={T.ok} onClick={()=>confirm(r.ptId,r.id)}><I.Check s={14}/> تأكيد</BtnSm>
+      </div>)}
+    </Card>}
+    {confirmed.length>0&&<Card T={T}>
+      <h4 style={{margin:"0 0 10px",fontSize:14,color:T.ok}}>مؤكدة ({confirmed.length})</h4>
+      {confirmed.map(r=><div key={r.id} style={{display:"flex",gap:10,alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${T.brd}`}}>
+        <img src={r.img} alt="" style={{width:45,height:45,objectFit:"cover",borderRadius:8,cursor:"pointer"}} onClick={()=>setViewPhoto(r.img)}/>
+        <div style={{flex:1}}><div style={{fontWeight:600,fontSize:13,color:T.txt}}>{r.ptName}</div><div style={{fontSize:11,color:T.txtS}}>{r.amount} ₪</div></div>
+        <Badge text="✓" color="ok" T={T}/>
+      </div>)}
+    </Card>}
+    {all.length===0&&<Card T={T} style={{textAlign:"center",padding:30}}><I.Bell s={40}/><p style={{color:T.txtS,fontSize:13,marginTop:8}}>لا توجد إشعارات</p></Card>}
+  </>;
+}
+
+// ─── ADMIN: PHOTOS ───
+function AdPhotos({patients,setViewPhoto,T}) {
+  const withPhotos = patients.filter(p=>p.labPhotos&&p.labPhotos.length>0);
+  return <>
+    <h3 style={{margin:"0 0 14px",fontSize:17,color:T.txt}}>صور التحاليل</h3>
+    {withPhotos.length===0?<Card T={T} style={{textAlign:"center",padding:30}}><I.Img s={40}/><p style={{color:T.txtS,fontSize:13,marginTop:8}}>لا توجد صور</p></Card>
+    :withPhotos.map(pt=><Card key={pt.id} T={T}>
+      <h4 style={{margin:"0 0 10px",fontSize:14,color:T.pri}}>{pt.name} ({pt.labPhotos.length})</h4>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+        {pt.labPhotos.map(ph=><div key={ph.id}><img src={ph.src} alt="" style={{width:"100%",aspectRatio:"1",objectFit:"cover",borderRadius:10,border:`2px solid ${T.brd}`,cursor:"pointer"}} onClick={()=>setViewPhoto(ph.src)}/><div style={{fontSize:9,color:T.txtS,textAlign:"center"}}>{ph.date}</div></div>)}
+      </div>
+    </Card>)}
+  </>;
+}
+
+// ─── ADMIN: REPORTS ───
+function AdReports({patients,T}) {
+  const totalBal=patients.reduce((s,p)=>s+p.balance,0);
+  const totalPaid=patients.reduce((s,p)=>s+p.payments.reduce((s2,pay)=>s2+pay.amount,0),0);
+  return <>
+    <h3 style={{margin:"0 0 14px",fontSize:17,color:T.txt}}>التقارير</h3>
+    <Card T={T}>
+      <h4 style={{margin:"0 0 12px",fontSize:15,color:T.pri}}>ملخص مالي</h4>
+      {[["إجمالي الأرصدة",`${totalBal} ₪`,totalBal>=0?T.ok:T.err],["إجمالي المدفوعات",`${totalPaid} ₪`,T.ok],["مرضى برصيد إيجابي",patients.filter(p=>p.balance>0).length,T.ok],["مرضى برصيد سالب",patients.filter(p=>p.balance<0).length,T.err],["مرضى برصيد صفر",patients.filter(p=>p.balance===0).length,T.txtS]]
+      .map(([l,v,c],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:`1px solid ${T.brd}`}}>
+        <span style={{fontSize:13,color:T.txtS}}>{l}</span><span style={{fontSize:14,fontWeight:700,color:c}}>{v}</span>
+      </div>)}
+    </Card>
+    <Card T={T}>
+      <h4 style={{margin:"0 0 12px",fontSize:15,color:T.pri}}>تفاصيل المرضى</h4>
+      {patients.map(pt=><div key={pt.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${T.brd}`}}>
+        <div><div style={{fontWeight:600,fontSize:13,color:T.txt}}>{pt.name}</div><div style={{fontSize:11,color:T.txtS}}>{pt.meds.length} دواء — {pt.appointments.length} موعد</div></div>
+        <div style={{fontWeight:700,fontSize:14,color:pt.balance>=0?T.ok:T.err}}>{pt.balance} ₪</div>
+      </div>)}
+    </Card>
+  </>;
+}
+
+// ═══════════════════════════════════
+//  MAIN
+// ═══════════════════════════════════
+const ClinicApp = function App() {
+  const [role,setRole]=useState(null);
+  const [patients,setPatients]=useState(initPts);
+  const [isDark,setIsDark]=useState(false);
+
+  const login = (u,p,setErr)=>{
+    if((u==="admin"&&p==="admin123")||(u==="ziad"&&p==="ziad123")){setRole("admin");return}
+    const pt=patients.find(x=>x.user===u&&x.pass===p);
+    if(pt){setRole(pt);return}
+    setErr("اسم المستخدم أو كلمة المرور غير صحيحة");
+  };
+
+  if(!role) return <LoginScreen onLogin={login} isDark={isDark} toggleDark={()=>setIsDark(d=>!d)}/>;
+  if(role==="admin") return <AdminApp patients={patients} setPatients={setPatients} onLogout={()=>setRole(null)} isDark={isDark} toggleDark={()=>setIsDark(d=>!d)}/>;
+  return <PatientApp patient={role} patients={patients} setPatients={setPatients} onLogout={()=>setRole(null)} isDark={isDark} toggleDark={()=>setIsDark(d=>!d)}/>;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(ClinicApp));
+</script>
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js')}
+</script>
+</body>
+</html>
